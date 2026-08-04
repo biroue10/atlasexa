@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.session import get_db
-from app.models import Product
+from app.models import Brand, Category, Product
 from app.schemas.search import ProductResult, SearchRequest, SearchResponse
 
 router = APIRouter(prefix="/api", tags=["search"])
@@ -18,20 +18,38 @@ async def search_products(
 
     statement = (
         select(Product)
-        .options(selectinload(Product.prices))
-        .where(Product.name.ilike(f"%{query}%"))
+        .join(Product.brand)
+        .join(Product.category)
+        .options(
+            selectinload(Product.prices),
+            selectinload(Product.brand),
+            selectinload(Product.category),
+        )
+        .where(
+            or_(
+                Product.name.ilike(f"%{query}%"),
+                Product.description.ilike(f"%{query}%"),
+                Brand.name.ilike(f"%{query}%"),
+                Category.name.ilike(f"%{query}%"),
+            )
+        )
         .limit(10)
     )
 
     products = list(db.scalars(statement).unique())
 
     if not products:
-        statement = (
+        fallback_statement = (
             select(Product)
-            .options(selectinload(Product.prices))
+            .options(
+                selectinload(Product.prices),
+                selectinload(Product.brand),
+                selectinload(Product.category),
+            )
             .limit(10)
         )
-        products = list(db.scalars(statement).unique())
+
+        products = list(db.scalars(fallback_statement).unique())
 
     results: list[ProductResult] = []
 
@@ -44,7 +62,8 @@ async def search_products(
                 price=float(latest_price.price) if latest_price else 0.0,
                 currency=latest_price.currency if latest_price else "USD",
                 score=max(70, 92 - index * 4),
-                reason=product.description or "Product available in the catalog.",
+                reason=product.description
+                or "Product available in the Atlasexa catalog.",
             )
         )
 
