@@ -19,19 +19,6 @@ async def search_products(
     max_price = extract_max_price(query)
     products = search_catalog(db, query, max_price=max_price)
 
-    if not products:
-        fallback_statement = (
-            select(Product)
-            .options(
-                selectinload(Product.prices),
-                selectinload(Product.brand),
-                selectinload(Product.category),
-            )
-            .limit(10)
-        )
-
-        products = list(db.scalars(fallback_statement).unique())
-
     results: list[ProductResult] = []
 
     for index, product in enumerate(products):
@@ -48,8 +35,14 @@ async def search_products(
             )
         )
 
-    return SearchResponse(
-        query=query,
-        summary=f"Found {len(results)} matching products in the Atlasexa catalog.",
-        products=results,
-    )
+    summary = (
+    f"Found {len(results)} matching products in the Atlasexa catalog."
+    if results
+    else "No matching products were found in the Atlasexa catalog."
+)
+
+return SearchResponse(
+    query=query,
+    summary=summary,
+    products=results,
+)
