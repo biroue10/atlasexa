@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
-
+from app.services.catalog_search import search_catalog
 from app.db.session import get_db
 from app.models import Brand, Category, Product
 from app.schemas.search import ProductResult, SearchRequest, SearchResponse
@@ -16,27 +16,7 @@ async def search_products(
 ) -> SearchResponse:
     query = request.query.strip()
 
-    statement = (
-        select(Product)
-        .join(Product.brand)
-        .join(Product.category)
-        .options(
-            selectinload(Product.prices),
-            selectinload(Product.brand),
-            selectinload(Product.category),
-        )
-        .where(
-            or_(
-                Product.name.ilike(f"%{query}%"),
-                Product.description.ilike(f"%{query}%"),
-                Brand.name.ilike(f"%{query}%"),
-                Category.name.ilike(f"%{query}%"),
-            )
-        )
-        .limit(10)
-    )
-
-    products = list(db.scalars(statement).unique())
+    products = search_catalog(db, query)
 
     if not products:
         fallback_statement = (
