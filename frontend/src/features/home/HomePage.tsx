@@ -1,7 +1,7 @@
 import { LoaderCircle, Search } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
-
+import { Link } from "react-router-dom";
 import {
   searchProducts,
   type SearchResponse,
@@ -127,31 +127,36 @@ export default function HomePage() {
 
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {result.products.map((product) => (
-                <article
-                  key={product.name}
-                  className="rounded-2xl border border-slate-200 p-6 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="font-semibold text-slate-900">
-                      {product.name}
-                    </h3>
+                <Link
+  key={product.slug}
+  to={`/products/${product.slug}`}
+  className="block rounded-2xl border border-slate-200 p-6 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+>
+  <div className="flex items-start justify-between gap-4">
+    <h3 className="font-semibold text-slate-900">
+      {product.name}
+    </h3>
 
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-                      {product.score}/100
-                    </span>
-                  </div>
+    <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+      {product.score}/100
+    </span>
+  </div>
 
-                  <p className="mt-4 text-2xl font-bold text-slate-900">
-                    {product.price.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: product.currency,
-                    })}
-                  </p>
+  <p className="mt-4 text-2xl font-bold text-slate-900">
+    {product.price.toLocaleString(undefined, {
+      style: "currency",
+      currency: product.currency,
+    })}
+  </p>
 
-                  <p className="mt-4 text-sm leading-6 text-slate-600">
-                    {product.reason}
-                  </p>
-                </article>
+  <p className="mt-4 text-sm leading-6 text-slate-600">
+    {product.reason}
+  </p>
+
+  <p className="mt-5 text-sm font-medium text-blue-600">
+    View product details →
+  </p>
+</Link>
               ))}
             </div>
           </section>

@@ -4,6 +4,7 @@ export interface ProductResult {
   currency: string;
   score: number;
   reason: string;
+  slug: string;
 }
 
 export interface SearchResponse {
