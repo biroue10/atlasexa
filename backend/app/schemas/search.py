@@ -11,6 +11,7 @@ class ProductResult(BaseModel):
     currency: str
     score: int
     reason: str
+    slug: str
 
 
 class SearchResponse(BaseModel):

@@ -31,6 +31,7 @@ async def search_products(
         results.append(
             ProductResult(
                 name=product.name,
+                slug=product.slug,
                 price=float(latest_price.price) if latest_price else 0.0,
                 currency=latest_price.currency if latest_price else "USD",
                 score=max(70, 92 - index * 4),
