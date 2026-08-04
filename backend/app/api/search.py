@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import or_, select
-from sqlalchemy.orm import Session, selectinload
-from app.services.catalog_search import search_catalog
+from sqlalchemy.orm import Session
+
 from app.db.session import get_db
-from app.models import Brand, Category, Product
 from app.schemas.search import ProductResult, SearchRequest, SearchResponse
+from app.services.catalog_search import search_catalog
 from app.services.query_parser import extract_max_price
+
 router = APIRouter(prefix="/api", tags=["search"])
 
 
@@ -15,9 +15,13 @@ async def search_products(
     db: Session = Depends(get_db),
 ) -> SearchResponse:
     query = request.query.strip()
-
     max_price = extract_max_price(query)
-    products = search_catalog(db, query, max_price=max_price)
+
+    products = search_catalog(
+        db,
+        query,
+        max_price=max_price,
+    )
 
     results: list[ProductResult] = []
 
@@ -30,19 +34,21 @@ async def search_products(
                 price=float(latest_price.price) if latest_price else 0.0,
                 currency=latest_price.currency if latest_price else "USD",
                 score=max(70, 92 - index * 4),
-                reason=product.description
-                or "Product available in the Atlasexa catalog.",
+                reason=(
+                    product.description
+                    or "Product available in the Atlasexa catalog."
+                ),
             )
         )
 
     summary = (
-    f"Found {len(results)} matching products in the Atlasexa catalog."
-    if results
-    else "No matching products were found in the Atlasexa catalog."
-)
+        f"Found {len(results)} matching products in the Atlasexa catalog."
+        if results
+        else "No matching products were found in the Atlasexa catalog."
+    )
 
-return SearchResponse(
-    query=query,
-    summary=summary,
-    products=results,
-)
+    return SearchResponse(
+        query=query,
+        summary=summary,
+        products=results,
+    )
