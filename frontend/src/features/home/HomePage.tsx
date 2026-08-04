@@ -1,6 +1,11 @@
+import { LoaderCircle, Search } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { LoaderCircle, Search } from "lucide-react";
+
+import {
+  searchProducts,
+  type SearchResponse,
+} from "@/services/searchApi";
 
 const suggestions = [
   "Laptop",
@@ -13,6 +18,8 @@ const suggestions = [
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
+  const [result, setResult] = useState<SearchResponse | null>(null);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -25,45 +32,42 @@ export default function HomePage() {
     }
 
     setIsLoading(true);
+    setError("");
+    setResult(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Search submitted:", cleanQuery);
+      const data = await searchProducts(cleanQuery);
+      setResult(data);
+    } catch {
+      setError("Unable to search products. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  function handleSuggestionClick(suggestion: string) {
-    setQuery(suggestion);
-  }
-
   return (
-    <main className="min-h-screen bg-white px-6">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center text-center">
-        <div className="mb-6 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-white shadow-sm">
+    <main className="min-h-screen bg-white px-6 py-16">
+      <div className="mx-auto w-full max-w-5xl text-center">
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 font-bold text-white">
             A
           </div>
 
-          <h1 className="text-6xl font-bold tracking-tight text-slate-900 md:text-7xl">
+          <h1 className="text-6xl font-bold tracking-tight text-slate-900">
             Atlasexa
           </h1>
         </div>
 
-        <p className="text-2xl text-slate-700 md:text-3xl">
+        <p className="mt-6 text-3xl text-slate-700">
           Find the best product with AI.
         </p>
 
-        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-500 md:text-lg">
+        <p className="mt-3 text-lg text-slate-500">
           Tell Atlasexa what you need. We’ll compare, explain and recommend.
         </p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mt-12 w-full max-w-4xl"
-        >
-          <div className="relative transition duration-200 focus-within:scale-[1.01]">
+        <form onSubmit={handleSubmit} className="mx-auto mt-12 max-w-4xl">
+          <div className="relative">
             <Search
               className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
               size={22}
@@ -74,15 +78,14 @@ export default function HomePage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="What are you looking for today?"
-              aria-label="Describe the product you are looking for"
-              className="w-full rounded-2xl border border-slate-300 bg-white py-5 pl-14 pr-5 text-lg text-slate-900 shadow-sm outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-slate-300 py-5 pl-14 pr-5 text-lg outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
             />
           </div>
 
           <button
             type="submit"
             disabled={!query.trim() || isLoading}
-            className="mt-8 inline-flex min-w-48 items-center justify-center gap-2 rounded-xl bg-slate-900 px-10 py-4 text-lg font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-8 inline-flex min-w-48 items-center justify-center gap-2 rounded-xl bg-slate-900 px-10 py-4 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -95,23 +98,64 @@ export default function HomePage() {
           </button>
         </form>
 
-        <div className="mt-10 flex max-w-4xl flex-wrap justify-center gap-3">
-          {suggestions.map((item) => (
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          {suggestions.map((suggestion) => (
             <button
-              key={item}
+              key={suggestion}
               type="button"
-              onClick={() => handleSuggestionClick(item)}
-              className="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onClick={() => setQuery(suggestion)}
+              className="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
-              {item}
+              {suggestion}
             </button>
           ))}
         </div>
 
-        <p className="mt-8 max-w-2xl text-sm leading-6 text-slate-500">
-          Trusted recommendations based on specifications, real reviews and AI
-          analysis.
-        </p>
+        {error && (
+          <p className="mt-10 text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+
+        {result && (
+          <section className="mx-auto mt-16 max-w-4xl text-left">
+            <h2 className="text-2xl font-bold text-slate-900">
+              Recommendations
+            </h2>
+
+            <p className="mt-2 text-slate-500">{result.summary}</p>
+
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {result.products.map((product) => (
+                <article
+                  key={product.name}
+                  className="rounded-2xl border border-slate-200 p-6 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-semibold text-slate-900">
+                      {product.name}
+                    </h3>
+
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                      {product.score}/100
+                    </span>
+                  </div>
+
+                  <p className="mt-4 text-2xl font-bold text-slate-900">
+                    {product.price.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: product.currency,
+                    })}
+                  </p>
+
+                  <p className="mt-4 text-sm leading-6 text-slate-600">
+                    {product.reason}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
