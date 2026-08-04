@@ -16,8 +16,7 @@ async def search_products(
 ) -> SearchResponse:
     query = request.query.strip()
 
-    max_price = extract_max_price(query)
-    products = search_catalog(db, query, max_price=max_price)
+    products = search_catalog(db, query)
 
     if not products:
         fallback_statement = (
