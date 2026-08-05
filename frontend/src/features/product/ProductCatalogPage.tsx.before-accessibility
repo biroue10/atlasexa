@@ -144,14 +144,7 @@ export default function ProductCatalogPage() {
           </p>
         </div>
 
-        <section
-          className="mt-8 grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 md:grid-cols-4"
-          aria-labelledby="catalog-filters-title"
-        >
-          <h2 id="catalog-filters-title" className="sr-only">
-            Product catalog filters
-          </h2>
-
+        <section className="mt-8 grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 md:grid-cols-4">
           <label className="grid gap-2 text-sm text-slate-700">
             Brand
             <select
@@ -229,18 +222,6 @@ export default function ProductCatalogPage() {
               Clear filters
             </button>
           </div>
-        )}
-
-        {!isLoading && !error && catalog && (
-          <p
-            className="mt-6 text-sm text-slate-600"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {catalog.total === 1
-              ? "1 product found"
-              : `${catalog.total} products found`}
-          </p>
         )}
 
         {isLoading && (
