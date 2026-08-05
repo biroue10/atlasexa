@@ -7,7 +7,6 @@ from app.models import Product
 from app.schemas.product import (
     ProductDetailResponse,
     ProductPriceResponse,
-    ProductSpecificationResponse,
 )
 
 router = APIRouter(prefix="/api/products", tags=["products"])
@@ -24,7 +23,6 @@ async def get_product(
             selectinload(Product.brand),
             selectinload(Product.category),
             selectinload(Product.prices),
-            selectinload(Product.specifications),
         )
         .where(Product.slug == slug)
     )
@@ -53,13 +51,5 @@ async def get_product(
                 product_url=price.product_url,
             )
             for price in product.prices
-        ],
-        specifications=[
-            ProductSpecificationResponse(
-                name=specification.name,
-                value=specification.value,
-                group=specification.group,
-            )
-            for specification in product.specifications
         ],
     )

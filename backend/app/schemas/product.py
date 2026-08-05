@@ -1,5 +1,11 @@
 from pydantic import BaseModel, ConfigDict
 
+class ProductSpecificationResponse(BaseModel):
+    name: str
+    value: str
+    group: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductPriceResponse(BaseModel):
     merchant: str
@@ -19,3 +25,4 @@ class ProductDetailResponse(BaseModel):
     brand: str
     category: str
     prices: list[ProductPriceResponse]
+    specifications: list[ProductSpecificationResponse]
