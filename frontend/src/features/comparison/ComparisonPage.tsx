@@ -199,6 +199,36 @@ export default function ComparisonPage() {
             <tbody>
               <tr>
                 <th className="border-b border-r border-slate-200 p-5 text-left">
+                  Atlasexa score
+                </th>
+
+                {products.map((product) => (
+                  <td
+                    key={product.slug}
+                    className="border-b border-r border-slate-200 p-5 last:border-r-0"
+                  >
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
+                        product.score === Math.max(
+                          ...products.map((item) => item.score),
+                        )
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {product.score}/100
+                    </span>
+
+                    {product.score_explanation && (
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        {product.score_explanation}
+                      </p>
+                    )}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <th className="border-b border-r border-slate-200 p-5 text-left">
                   Price
                 </th>
 
