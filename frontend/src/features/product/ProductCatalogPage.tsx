@@ -6,6 +6,10 @@ import {
   getProducts,
   type ProductListResponse,
 } from "@/services/catalogApi";
+import {
+  getCatalogOptions,
+  type CatalogOptions,
+} from "@/services/catalogOptionsApi";
 
 const PAGE_SIZE = 12;
 
@@ -29,8 +33,36 @@ export default function ProductCatalogPage() {
 
   const [catalog, setCatalog] =
     useState<ProductListResponse | null>(null);
+  const [options, setOptions] = useState<CatalogOptions | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadOptions() {
+      try {
+        const data = await getCatalogOptions();
+
+        if (!cancelled) {
+          setOptions(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setOptions({
+            brands: [],
+            categories: [],
+          });
+        }
+      }
+    }
+
+    void loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,9 +142,11 @@ export default function ProductCatalogPage() {
               className="rounded-xl border border-slate-300 px-3 py-3"
             >
               <option value="">All brands</option>
-              <option value="ASUS">ASUS</option>
-              <option value="Dell">Dell</option>
-              <option value="Lenovo">Lenovo</option>
+              {options?.brands.map((brandName) => (
+                <option key={brandName} value={brandName}>
+                  {brandName}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -127,7 +161,11 @@ export default function ProductCatalogPage() {
               className="rounded-xl border border-slate-300 px-3 py-3"
             >
               <option value="">All categories</option>
-              <option value="Laptops">Laptops</option>
+              {options?.categories.map((categoryName) => (
+                <option key={categoryName} value={categoryName}>
+                  {categoryName}
+                </option>
+              ))}
             </select>
           </label>
 
