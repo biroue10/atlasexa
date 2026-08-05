@@ -22,6 +22,7 @@ const API_URL =
   import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export interface CatalogFilters {
+  query?: string;
   brand?: string;
   category?: string;
   maxPrice?: string;
@@ -38,6 +39,10 @@ export async function getProducts(
     page: String(page),
     page_size: String(pageSize),
   });
+
+  if (filters.query) {
+    params.set("q", filters.query);
+  }
 
   if (filters.brand) {
     params.set("brand", filters.brand);
