@@ -19,6 +19,8 @@ export interface ProductDetail {
   image_url: string | null;
   brand: string;
   category: string;
+  score: number;
+  score_explanation: string | null;
   prices: ProductPrice[];
   specifications: ProductSpecification[];
 }

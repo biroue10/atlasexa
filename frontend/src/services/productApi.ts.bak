@@ -5,6 +5,12 @@ export interface ProductPrice {
   product_url: string;
 }
 
+export interface ProductSpecification {
+  name: string;
+  value: string;
+  group: string;
+}
+
 export interface ProductDetail {
   id: number;
   name: string;
@@ -14,6 +20,7 @@ export interface ProductDetail {
   brand: string;
   category: string;
   prices: ProductPrice[];
+  specifications: ProductSpecification[];
 }
 
 const API_URL =

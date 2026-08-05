@@ -25,6 +25,7 @@ async def get_product(
             selectinload(Product.category),
             selectinload(Product.prices),
             selectinload(Product.specifications),
+            selectinload(Product.score),
         )
         .where(Product.slug == slug)
     )
@@ -45,6 +46,10 @@ async def get_product(
         image_url=product.image_url,
         brand=product.brand.name,
         category=product.category.name,
+        score=product.score.overall_score if product.score else 0,
+        score_explanation=(
+            product.score.explanation if product.score else None
+        ),
         prices=[
             ProductPriceResponse(
                 merchant=price.merchant,

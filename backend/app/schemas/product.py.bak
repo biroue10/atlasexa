@@ -24,7 +24,5 @@ class ProductDetailResponse(BaseModel):
     image_url: str | None
     brand: str
     category: str
-    score: int
-    score_explanation: str | None
     prices: list[ProductPriceResponse]
     specifications: list[ProductSpecificationResponse]

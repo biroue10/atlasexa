@@ -111,6 +111,27 @@ export default function ProductPage() {
             {product.description ?? "No product description available."}
           </p>
 
+          <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+            <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">
+              Atlasexa score
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-end gap-4">
+              <p className="text-5xl font-bold text-emerald-800">
+                {product.score}
+              </p>
+
+              <p className="pb-1 text-lg font-medium text-emerald-700">
+                /100
+              </p>
+            </div>
+
+            {product.score_explanation && (
+              <p className="mt-4 max-w-3xl leading-7 text-emerald-900">
+                {product.score_explanation}
+              </p>
+            )}
+          </div>
           <h2 className="mt-10 text-2xl font-semibold text-slate-900">
             Technical specifications
           </h2>
