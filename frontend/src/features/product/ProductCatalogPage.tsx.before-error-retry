@@ -30,7 +30,6 @@ export default function ProductCatalogPage() {
   const [options, setOptions] = useState<CatalogOptions | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,14 +92,7 @@ export default function ProductCatalogPage() {
     return () => {
       cancelled = true;
     };
-  }, [
-    currentPage,
-    brand,
-    category,
-    maxPrice,
-    sortBy,
-    retryCount,
-  ]);
+  }, [currentPage, brand, category, maxPrice, sortBy]);
 
   const totalPages = catalog
     ? Math.max(1, Math.ceil(catalog.total / catalog.page_size))
@@ -260,27 +252,10 @@ export default function ProductCatalogPage() {
           </div>
         )}
 
-        {error && !isLoading && (
-          <section
-            className="mt-10 rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center"
-            role="alert"
-          >
-            <h2 className="text-lg font-semibold text-red-900">
-              Unable to load products
-            </h2>
-
-            <p className="mt-2 text-sm text-red-700">
-              {error}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setRetryCount((count) => count + 1)}
-              className="mt-6 rounded-xl bg-red-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-800"
-            >
-              Retry
-            </button>
-          </section>
+        {error && (
+          <p className="mt-10 text-red-600" role="alert">
+            {error}
+          </p>
         )}
 
         {!isLoading &&
