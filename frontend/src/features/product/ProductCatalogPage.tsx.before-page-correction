@@ -106,27 +106,6 @@ export default function ProductCatalogPage() {
     ? Math.max(1, Math.ceil(catalog.total / catalog.page_size))
     : 1;
 
-  useEffect(() => {
-    if (
-      !isLoading &&
-      catalog &&
-      catalog.total > 0 &&
-      currentPage > totalPages
-    ) {
-      const nextParams = new URLSearchParams(searchParams);
-
-      nextParams.set("page", String(totalPages));
-      setSearchParams(nextParams, { replace: true });
-    }
-  }, [
-    catalog,
-    currentPage,
-    isLoading,
-    searchParams,
-    setSearchParams,
-    totalPages,
-  ]);
-
   function updateFilter(name: string, value: string) {
     const nextParams = new URLSearchParams(searchParams);
 
