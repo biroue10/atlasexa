@@ -69,37 +69,29 @@ export default function ProductCatalogPage() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
 
     async function loadCatalog() {
       setIsLoading(true);
       setError("");
 
       try {
-        const data = await getProducts(
-          currentPage,
-          PAGE_SIZE,
-          {
-            brand,
-            category,
-            maxPrice,
-            sortBy,
-          },
-          controller.signal,
-        );
+        const data = await getProducts(currentPage, PAGE_SIZE, {
+          brand,
+          category,
+          maxPrice,
+          sortBy,
+        });
 
-        setCatalog(data);
-      } catch (requestError) {
-        if (
-          requestError instanceof DOMException &&
-          requestError.name === "AbortError"
-        ) {
-          return;
+        if (!cancelled) {
+          setCatalog(data);
         }
-
-        setError("Unable to load the product catalog.");
+      } catch {
+        if (!cancelled) {
+          setError("Unable to load the product catalog.");
+        }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setIsLoading(false);
         }
       }
@@ -108,7 +100,7 @@ export default function ProductCatalogPage() {
     void loadCatalog();
 
     return () => {
-      controller.abort();
+      cancelled = true;
     };
   }, [
     currentPage,
