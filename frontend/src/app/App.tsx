@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ComparisonProvider from "@/features/comparison/ComparisonProvider";
 import HomePage from "@/features/home/HomePage";
 import ProductPage from "@/features/product/ProductPage";
-
+import ComparisonBar from "@/features/comparison/ComparisonBar";
 export default function App() {
   return (
     <ComparisonProvider>
@@ -12,6 +12,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/products/:slug" element={<ProductPage />} />
         </Routes>
+        <ComparisonBar />
       </BrowserRouter>
     </ComparisonProvider>
   );
