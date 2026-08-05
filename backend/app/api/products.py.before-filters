@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.session import get_db
-from app.models import Brand, Category, Product, ProductPrice, ProductScore
+from app.models import Product
 from app.schemas.product import (
     ProductDetailResponse,
     ProductPriceResponse,
@@ -17,75 +17,24 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 async def list_products(
     page: int = 1,
     page_size: int = 12,
-    brand: str | None = None,
-    category: str | None = None,
-    max_price: float | None = None,
-    sort_by: str = "score",
     db: Session = Depends(get_db),
 ) -> ProductListResponse:
     page = max(page, 1)
     page_size = min(max(page_size, 1), 50)
 
-    filters = []
-
-    if brand:
-        filters.append(Brand.name.ilike(brand.strip()))
-
-    if category:
-        filters.append(Category.name.ilike(category.strip()))
-
-    if max_price is not None:
-        filters.append(
-            Product.prices.any(ProductPrice.price <= max_price)
-        )
-
-    count_statement = (
-        select(func.count(Product.id))
-        .join(Product.brand)
-        .join(Product.category)
-    )
-
-    if filters:
-        count_statement = count_statement.where(*filters)
-
-    total = db.scalar(count_statement) or 0
+    total = db.scalar(
+        select(func.count()).select_from(Product)
+    ) or 0
 
     statement = (
         select(Product)
-        .join(Product.brand)
-        .join(Product.category)
-        .outerjoin(
-            ProductScore,
-            ProductScore.product_id == Product.id,
-        )
         .options(
             selectinload(Product.brand),
             selectinload(Product.category),
             selectinload(Product.prices),
             selectinload(Product.score),
         )
-    )
-
-    if filters:
-        statement = statement.where(*filters)
-
-    if sort_by == "price_low":
-        statement = statement.order_by(
-            Product.prices.any(),
-            Product.name.asc(),
-        )
-    elif sort_by == "price_high":
-        statement = statement.order_by(Product.name.asc())
-    elif sort_by == "name":
-        statement = statement.order_by(Product.name.asc())
-    else:
-        statement = statement.order_by(
-            ProductScore.overall_score.desc().nullslast(),
-            Product.name.asc(),
-        )
-
-    statement = (
-        statement
+        .order_by(Product.name.asc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
@@ -123,25 +72,13 @@ async def list_products(
             )
         )
 
-    if sort_by == "price_low":
-        items.sort(
-            key=lambda item: (
-                item.minimum_price is None,
-                item.minimum_price or 0,
-            )
-        )
-    elif sort_by == "price_high":
-        items.sort(
-            key=lambda item: item.minimum_price or 0,
-            reverse=True,
-        )
-
     return ProductListResponse(
         items=items,
         total=total,
         page=page,
         page_size=page_size,
     )
+
 
 
 @router.get("/{slug}", response_model=ProductDetailResponse)
