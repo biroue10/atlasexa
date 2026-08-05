@@ -28,23 +28,3 @@ class ProductDetailResponse(BaseModel):
     score_explanation: str | None
     prices: list[ProductPriceResponse]
     specifications: list[ProductSpecificationResponse]
-
-
-class ProductListItemResponse(BaseModel):
-    id: int
-    name: str
-    slug: str
-    description: str | None
-    image_url: str | None
-    brand: str
-    category: str
-    score: int
-    minimum_price: float | None
-    currency: str | None
-
-
-class ProductListResponse(BaseModel):
-    items: list[ProductListItemResponse]
-    total: int
-    page: int
-    page_size: int

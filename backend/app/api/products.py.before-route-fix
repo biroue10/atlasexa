@@ -13,7 +13,6 @@ from app.schemas.product import (
 )
 
 router = APIRouter(prefix="/api/products", tags=["products"])
-@router.get("", response_model=ProductListResponse)
 async def list_products(
     page: int = 1,
     page_size: int = 12,
@@ -82,8 +81,6 @@ async def list_products(
 
 
 @router.get("/{slug}", response_model=ProductDetailResponse)
-async def get_product(
-    slug: str,
     db: Session = Depends(get_db),
 ) -> ProductDetailResponse:
     statement = (
