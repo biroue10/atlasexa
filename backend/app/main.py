@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import settings
 from app.api.search import router as search_router
 from app.api.health import router as health_router
 from app.api.products import router as products_router
@@ -14,9 +16,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-	"http://192.168.11.104:5173",
+        origin.strip()
+        for origin in settings.cors_origins.split(",")
+        if origin.strip()
     ],
     allow_credentials=True,
     allow_methods=["*"],
