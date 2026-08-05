@@ -125,3 +125,65 @@ def test_rejects_excessive_page_size() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_search_products_by_name() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "Lenovo"},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["items"][0]["slug"] == "lenovo-ideapad-slim-5"
+
+
+def test_search_products_by_description() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "programming"},
+    )
+
+    assert response.status_code == 200
+
+    slugs = [
+        product["slug"]
+        for product in response.json()["items"]
+    ]
+
+    assert "lenovo-ideapad-slim-5" in slugs
+
+
+def test_search_products_by_brand_is_case_insensitive() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "asus"},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["items"][0]["slug"] == "asus-vivobook-15"
+
+
+def test_rejects_search_query_that_is_too_short() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "a"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_rejects_search_query_that_is_too_long() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "a" * 101},
+    )
+
+    assert response.status_code == 422
