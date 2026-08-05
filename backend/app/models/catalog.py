@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from app.models.specification import ProductSpecification
+from app.models.score import ProductScore
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -73,6 +74,12 @@ class Product(Base):
         back_populates="product",
         cascade="all, delete-orphan",
     )
+    score: Mapped["ProductScore | None"] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
     specifications: Mapped[list["ProductSpecification"]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",

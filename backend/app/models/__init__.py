@@ -1,4 +1,5 @@
 from app.models.specification import ProductSpecification
+from app.models.score import ProductScore
 from app.models.catalog import (
 
     AffiliateLink,
@@ -15,4 +16,5 @@ __all__ = [
     "Product",
     "ProductPrice",
     "ProductSpecification",
+    "ProductScore",
 ]
