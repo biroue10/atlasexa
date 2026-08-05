@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-
+from app.models.specification import ProductSpecification
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -70,6 +70,10 @@ class Product(Base):
         cascade="all, delete-orphan",
     )
     affiliate_links: Mapped[list["AffiliateLink"]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+    )
+    specifications: Mapped[list["ProductSpecification"]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",
     )
