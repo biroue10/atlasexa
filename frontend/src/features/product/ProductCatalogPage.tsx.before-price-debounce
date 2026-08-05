@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -19,7 +19,6 @@ export default function ProductCatalogPage() {
   const category = searchParams.get("category") ?? "";
   const maxPrice = searchParams.get("max_price") ?? "";
   const sortBy = searchParams.get("sort_by") ?? "score";
-  const maxPriceTimeoutRef = useRef<number | null>(null);
   const requestedPage = Number(searchParams.get("page") ?? "1");
   const currentPage =
     Number.isInteger(requestedPage) && requestedPage > 0
@@ -32,14 +31,6 @@ export default function ProductCatalogPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-
-  useEffect(() => {
-    return () => {
-      if (maxPriceTimeoutRef.current !== null) {
-        window.clearTimeout(maxPriceTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -231,19 +222,9 @@ export default function ProductCatalogPage() {
             <input
               type="number"
               min="0"
-              key={maxPrice}
-              defaultValue={maxPrice}
+              value={maxPrice}
               onChange={(event) => {
-                const value = event.target.value;
-
-                if (maxPriceTimeoutRef.current !== null) {
-                  window.clearTimeout(maxPriceTimeoutRef.current);
-                }
-
-                maxPriceTimeoutRef.current = window.setTimeout(() => {
-                  updateFilter("max_price", value);
-                  maxPriceTimeoutRef.current = null;
-                }, 400);
+                updateFilter("max_price", event.target.value);
               }}
               placeholder="900"
               className="rounded-xl border border-slate-300 px-3 py-3"
