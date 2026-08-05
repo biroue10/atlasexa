@@ -274,36 +274,34 @@ export default function ProductCatalogPage() {
               ))}
             </section>
 
-            {totalPages > 1 && (
-              <nav
-                className="mt-12 flex items-center justify-center gap-4"
-                aria-label="Product catalog pagination"
+            <nav
+              className="mt-12 flex items-center justify-center gap-4"
+              aria-label="Product catalog pagination"
+            >
+              <button
+                type="button"
+                onClick={() => changePage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <button
-                  type="button"
-                  onClick={() => changePage(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <ChevronLeft size={17} />
-                  Previous
-                </button>
+                <ChevronLeft size={17} />
+                Previous
+              </button>
 
-                <span className="text-sm text-slate-600">
-                  Page {currentPage} of {totalPages}
-                </span>
+              <span className="text-sm text-slate-600">
+                Page {currentPage} of {totalPages}
+              </span>
 
-                <button
-                  type="button"
-                  onClick={() => changePage(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Next
-                  <ChevronRight size={17} />
-                </button>
-              </nav>
-            )}
+              <button
+                type="button"
+                onClick={() => changePage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight size={17} />
+              </button>
+            </nav>
           </>
         )}
       </div>
