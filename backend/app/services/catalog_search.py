@@ -5,7 +5,7 @@ from decimal import Decimal
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Brand, Category, Product, ProductPrice
+from app.models import Brand, Category, Product, ProductPrice, ProductScore
 
 STOP_WORDS = {
     "a",
@@ -58,6 +58,7 @@ def search_catalog(
         select(Product)
         .join(Product.brand)
         .join(Product.category)
+        .outerjoin(ProductScore, ProductScore.product_id == Product.id)
         .options(
             selectinload(Product.prices),
             selectinload(Product.brand),
@@ -74,6 +75,9 @@ def search_catalog(
             Product.prices.any(ProductPrice.price <= max_price)
         )
 
-    statement = statement.distinct().limit(10)
+    statement = statement.order_by(
+        ProductScore.overall_score.desc().nullslast(),
+        Product.name.asc(),
+    ).limit(10)
 
     return list(db.scalars(statement).unique())
