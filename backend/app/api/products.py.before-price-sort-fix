@@ -69,23 +69,13 @@ async def list_products(
     if filters:
         statement = statement.where(*filters)
 
-    minimum_price_expression = (
-        select(func.min(ProductPrice.price))
-        .where(ProductPrice.product_id == Product.id)
-        .correlate(Product)
-        .scalar_subquery()
-    )
-
     if sort_by == "price_low":
         statement = statement.order_by(
-            minimum_price_expression.asc().nullslast(),
+            Product.prices.any(),
             Product.name.asc(),
         )
     elif sort_by == "price_high":
-        statement = statement.order_by(
-            minimum_price_expression.desc().nullslast(),
-            Product.name.asc(),
-        )
+        statement = statement.order_by(Product.name.asc())
     elif sort_by == "name":
         statement = statement.order_by(Product.name.asc())
     else:
@@ -133,6 +123,18 @@ async def list_products(
             )
         )
 
+    if sort_by == "price_low":
+        items.sort(
+            key=lambda item: (
+                item.minimum_price is None,
+                item.minimum_price or 0,
+            )
+        )
+    elif sort_by == "price_high":
+        items.sort(
+            key=lambda item: item.minimum_price or 0,
+            reverse=True,
+        )
 
     return ProductListResponse(
         items=items,
