@@ -111,10 +111,6 @@ export default function ProductCatalogPage() {
     setSearchParams(nextParams);
   }
 
-  function clearFilters() {
-    setSearchParams({});
-  }
-
   function changePage(page: number) {
     const nextParams = new URLSearchParams(searchParams);
 
@@ -211,19 +207,6 @@ export default function ProductCatalogPage() {
             </select>
           </label>
         </section>
-
-        {(brand || category || maxPrice || sortBy !== "score") && (
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              Clear filters
-            </button>
-          </div>
-        )}
-
         {isLoading && (
           <div className="flex min-h-80 items-center justify-center">
             <LoaderCircle
