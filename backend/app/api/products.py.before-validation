@@ -1,5 +1,4 @@
-from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
@@ -16,12 +15,12 @@ from app.schemas.product import (
 router = APIRouter(prefix="/api/products", tags=["products"])
 @router.get("", response_model=ProductListResponse)
 async def list_products(
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=12, ge=1, le=50),
+    page: int = 1,
+    page_size: int = 12,
     brand: str | None = None,
     category: str | None = None,
-    max_price: float | None = Query(default=None, ge=0),
-    sort_by: Literal["score", "price_low", "price_high", "name"] = "score",
+    max_price: float | None = None,
+    sort_by: str = "score",
     db: Session = Depends(get_db),
 ) -> ProductListResponse:
     page = max(page, 1)
