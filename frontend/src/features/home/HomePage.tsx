@@ -138,7 +138,7 @@ export default function HomePage() {
                 <Link
   key={product.slug}
   to={`/products/${product.slug}`}
-  className="block rounded-2xl border border-slate-200 p-6 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+  className="flex h-full flex-col rounded-2xl border border-slate-200 p-6 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
 >
   <div className="flex items-start justify-between gap-4">
     <h3 className="font-semibold text-slate-900">
@@ -151,7 +151,7 @@ export default function HomePage() {
   </div>
 
   <p className="mt-4 text-2xl font-bold text-slate-900">
-    {product.price.toLocaleString(undefined, {
+    {product.price.toLocaleString("en-US", {
       style: "currency",
       currency: product.currency,
     })}
@@ -178,7 +178,7 @@ export default function HomePage() {
                   !isSelected(product.slug) &&
                   comparisonProducts.length >= 4
                 }
-                className={`mt-5 w-full rounded-xl border px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`mt-auto w-full rounded-xl border px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   isSelected(product.slug)
                     ? "border-emerald-600 bg-emerald-50 text-emerald-700"
                     : "border-slate-300 text-slate-700 hover:bg-slate-50"
