@@ -89,3 +89,39 @@ def test_sort_products_by_score() -> None:
     ]
 
     assert scores == [91, 88, 84]
+
+
+def test_rejects_invalid_sort_value() -> None:
+    response = client.get(
+        "/api/products",
+        params={"sort_by": "invalid"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_rejects_negative_maximum_price() -> None:
+    response = client.get(
+        "/api/products",
+        params={"max_price": -100},
+    )
+
+    assert response.status_code == 422
+
+
+def test_rejects_invalid_page() -> None:
+    response = client.get(
+        "/api/products",
+        params={"page": 0},
+    )
+
+    assert response.status_code == 422
+
+
+def test_rejects_excessive_page_size() -> None:
+    response = client.get(
+        "/api/products",
+        params={"page_size": 100},
+    )
+
+    assert response.status_code == 422
