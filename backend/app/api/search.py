@@ -25,7 +25,7 @@ async def search_products(
 
     results: list[ProductResult] = []
 
-    for index, product in enumerate(products):
+    for product in products:
         latest_price = product.prices[0] if product.prices else None
 
         results.append(
@@ -34,10 +34,12 @@ async def search_products(
                 slug=product.slug,
                 price=float(latest_price.price) if latest_price else 0.0,
                 currency=latest_price.currency if latest_price else "USD",
-                score=max(70, 92 - index * 4),
+                score=product.score.overall_score if product.score else 0,
                 reason=(
-                    product.description
-                    or "Product available in the Atlasexa catalog."
+                    product.score.explanation
+                    if product.score and product.score.explanation
+                    else product.description
+                    or "No recommendation explanation is available."
                 ),
             )
         )

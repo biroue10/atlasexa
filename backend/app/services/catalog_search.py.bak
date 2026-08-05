@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal
+from decimal import Decimal
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload

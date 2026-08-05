@@ -62,6 +62,7 @@ def search_catalog(
             selectinload(Product.prices),
             selectinload(Product.brand),
             selectinload(Product.category),
+            selectinload(Product.score),
         )
     )
 
