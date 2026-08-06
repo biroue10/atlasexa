@@ -22,20 +22,13 @@ async def list_products(
     brand: str | None = None,
     category: str | None = None,
     max_price: float | None = Query(default=None, ge=0),
-    sort_by: Literal[
-        "relevance",
-        "score",
-        "price_low",
-        "price_high",
-        "name",
-    ] = "score",
+    sort_by: Literal["score", "price_low", "price_high", "name"] = "score",
     db: Session = Depends(get_db),
 ) -> ProductListResponse:
     page = max(page, 1)
     page_size = min(max(page_size, 1), 50)
 
     filters = []
-    normalized_query: str | None = None
 
     if q is not None:
         normalized_query = q.strip()
@@ -106,22 +99,7 @@ async def list_products(
         .scalar_subquery()
     )
 
-    if sort_by == "relevance" and normalized_query:
-        relevance_expression = func.greatest(
-            func.similarity(Product.name, normalized_query) * 3,
-            func.similarity(
-                func.coalesce(Product.description, ""),
-                normalized_query,
-            ),
-            func.similarity(Brand.name, normalized_query) * 2,
-        )
-
-        statement = statement.order_by(
-            relevance_expression.desc(),
-            ProductScore.overall_score.desc().nullslast(),
-            Product.name.asc(),
-        )
-    elif sort_by == "price_low":
+    if sort_by == "price_low":
         statement = statement.order_by(
             minimum_price_expression.asc().nullslast(),
             Product.name.asc(),

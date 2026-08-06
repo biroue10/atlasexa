@@ -213,3 +213,30 @@ def test_search_query_is_trimmed() -> None:
 
     assert data["total"] == 1
     assert data["items"][0]["slug"] == "lenovo-ideapad-slim-5"
+
+
+def test_sort_products_by_relevance() -> None:
+    response = client.get(
+        "/api/products",
+        params={
+            "q": "Lenovo",
+            "sort_by": "relevance",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["items"][0]["slug"] == "lenovo-ideapad-slim-5"
+
+
+def test_relevance_without_query_falls_back_safely() -> None:
+    response = client.get(
+        "/api/products",
+        params={"sort_by": "relevance"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 3
