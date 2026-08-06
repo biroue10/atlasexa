@@ -187,3 +187,29 @@ def test_rejects_search_query_that_is_too_long() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_rejects_whitespace_only_search_query() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "   "},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "Search query must contain at least 2 characters."
+    )
+
+
+def test_search_query_is_trimmed() -> None:
+    response = client.get(
+        "/api/products",
+        params={"q": "  Lenovo  "},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["items"][0]["slug"] == "lenovo-ideapad-slim-5"

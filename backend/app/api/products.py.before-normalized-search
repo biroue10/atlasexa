@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 async def list_products(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=50),
-    q: str | None = Query(default=None, max_length=100),
+    q: str | None = Query(default=None, min_length=2, max_length=100),
     brand: str | None = None,
     category: str | None = None,
     max_price: float | None = Query(default=None, ge=0),
@@ -30,16 +30,8 @@ async def list_products(
 
     filters = []
 
-    if q is not None:
-        normalized_query = q.strip()
-
-        if len(normalized_query) < 2:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Search query must contain at least 2 characters.",
-            )
-
-        search_pattern = f"%{normalized_query}%"
+    if q:
+        search_pattern = f"%{q.strip()}%"
 
         filters.append(
             or_(
