@@ -3,7 +3,7 @@ from sqlalchemy import text
 from app.db.session import engine
 
 
-def main() -> None:
+def test_database_connection_uses_test_database() -> None:
     with engine.connect() as connection:
         database = connection.execute(
             text("SELECT current_database()")
@@ -13,10 +13,32 @@ def main() -> None:
             text("SELECT current_user")
         ).scalar_one()
 
-        print(f"Database: {database}")
-        print(f"User: {user}")
-        print("Connection successful")
+    assert database == "atlasexa_test_db"
+    assert user == "atlasexa_user"
 
 
-if __name__ == "__main__":
-    main()
+def test_pg_trgm_extension_is_available() -> None:
+    with engine.connect() as connection:
+        extension = connection.execute(
+            text(
+                """
+                SELECT extname
+                FROM pg_extension
+                WHERE extname = 'pg_trgm'
+                """
+            )
+        ).scalar_one_or_none()
+
+        similarity = connection.execute(
+            text(
+                """
+                SELECT similarity(
+                    'Lenovo'::text,
+                    'Lenovo'::text
+                )
+                """
+            )
+        ).scalar_one()
+
+    assert extension == "pg_trgm"
+    assert similarity == 1.0

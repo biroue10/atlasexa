@@ -1,2 +1,5 @@
 
 frontend/.env.development
+
+# Backend test environment
+backend/.env.test
