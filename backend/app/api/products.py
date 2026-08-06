@@ -1,8 +1,9 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.rate_limit import limiter
 from app.db.session import get_db
 from app.models import Brand, Category, Product, ProductPrice, ProductScore
 from app.schemas.product import (
@@ -15,7 +16,9 @@ from app.schemas.product import (
 
 router = APIRouter(prefix="/api/products", tags=["products"])
 @router.get("", response_model=ProductListResponse)
+@limiter.limit("120/minute")
 async def list_products(
+    request: Request,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=50),
     q: str | None = Query(default=None, max_length=100),
@@ -188,7 +191,9 @@ async def list_products(
 
 
 @router.get("/{slug}", response_model=ProductDetailResponse)
+@limiter.limit("120/minute")
 async def get_product(
+    request: Request,
     slug: str,
     db: Session = Depends(get_db),
 ) -> ProductDetailResponse:

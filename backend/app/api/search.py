@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
+from app.core.rate_limit import limiter
 from app.db.session import get_db
 from app.schemas.search import ProductResult, SearchRequest, SearchResponse
 from app.services.catalog_search import search_catalog
@@ -10,11 +11,13 @@ router = APIRouter(prefix="/api", tags=["search"])
 
 
 @router.post("/search", response_model=SearchResponse)
+@limiter.limit("30/minute")
 async def search_products(
-    request: SearchRequest,
+    request: Request,
+    payload: SearchRequest,
     db: Session = Depends(get_db),
 ) -> SearchResponse:
-    query = request.query.strip()
+    query = payload.query.strip()
     max_price = extract_max_price(query)
 
     products = search_catalog(
