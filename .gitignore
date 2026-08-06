@@ -3,3 +3,6 @@ frontend/.env.development
 
 # Backend test environment
 backend/.env.test
+
+# Docker secrets
+.env.docker
