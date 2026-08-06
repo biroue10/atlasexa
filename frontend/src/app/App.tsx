@@ -9,7 +9,7 @@ import ComparisonPage from "@/features/comparison/ComparisonPage";
 export default function App() {
   return (
     <ComparisonProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductCatalogPage />} />
