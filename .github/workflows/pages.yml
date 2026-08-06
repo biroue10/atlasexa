@@ -7,7 +7,6 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/pages.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,11 +14,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
+    name: Build frontend
     runs-on: ubuntu-latest
 
     defaults:
@@ -27,8 +27,16 @@ jobs:
         working-directory: frontend
 
     steps:
-      - name: Checkout
+      - name: Checkout exact commit
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Verify checked out commit
+        run: |
+          echo "Workflow SHA: $GITHUB_SHA"
+          echo "Checked out SHA: $(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -52,6 +60,12 @@ jobs:
       - name: Validate performance budget
         run: npm run validate:performance
 
+      - name: Verify production build
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          echo "Build artifact verified."
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -60,13 +74,40 @@ jobs:
         with:
           path: frontend/dist
 
+  verify-main:
+    name: Verify latest main commit
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Ensure this run is still the latest main commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          LATEST_SHA="$(
+            gh api repos/${{ github.repository }}/commits/main \
+              --jq '.sha'
+          )"
+
+          echo "Run SHA:    $CURRENT_SHA"
+          echo "Latest SHA: $LATEST_SHA"
+
+          if [ "$CURRENT_SHA" != "$LATEST_SHA" ]; then
+            echo "A newer main commit exists. Refusing to deploy stale build."
+            exit 1
+          fi
+
   deploy:
+    name: Deploy latest frontend
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - verify-main
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
-    needs: build
 
     steps:
       - name: Deploy to GitHub Pages
