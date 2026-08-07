@@ -5,6 +5,13 @@ export interface ProductPrice {
   product_url: string;
 }
 
+export interface ProductImage {
+  image_url: string;
+  alt_text: string | null;
+  position: number;
+  is_primary: boolean;
+}
+
 export interface ProductSpecification {
   name: string;
   value: string;
@@ -22,6 +29,7 @@ export interface ProductDetail {
   score: number;
   score_explanation: string | null;
   prices: ProductPrice[];
+  images: ProductImage[];
   specifications: ProductSpecification[];
 }
 

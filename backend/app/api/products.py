@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.models import Brand, Category, Product, ProductPrice, ProductScore
 from app.schemas.product import (
     ProductDetailResponse,
+    ProductImageResponse,
     ProductPriceResponse,
     ProductSpecificationResponse,
     ProductListItemResponse,
@@ -215,6 +216,7 @@ async def get_product(
             selectinload(Product.category),
             selectinload(Product.prices),
             selectinload(Product.specifications),
+            selectinload(Product.images),
             selectinload(Product.score),
         )
         .where(Product.slug == slug)
@@ -248,6 +250,15 @@ async def get_product(
                 product_url=price.product_url,
             )
             for price in product.prices
+        ],
+        images=[
+            ProductImageResponse(
+                image_url=image.image_url,
+                alt_text=image.alt_text,
+                position=image.position,
+                is_primary=image.is_primary,
+            )
+            for image in product.images
         ],
         specifications=[
             ProductSpecificationResponse(

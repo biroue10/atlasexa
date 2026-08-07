@@ -8,6 +8,7 @@ from app.models import (
     Brand,
     Category,
     Product,
+    ProductImage,
     ProductPrice,
     ProductScore,
     ProductSpecification,
@@ -95,6 +96,43 @@ def seed_catalog_full() -> None:
                     product.brand = brand
                     product.category = category
                     updated += 1
+
+                existing_images = {
+                    image.image_url: image
+                    for image in db.scalars(
+                        select(ProductImage).where(
+                            ProductImage.product_id == product.id
+                        )
+                    )
+                }
+
+                configured_images = product_data.get("images", [])
+
+                for image_data in configured_images:
+                    image = existing_images.get(
+                        image_data["image_url"]
+                    )
+
+                    if image is None:
+                        db.add(
+                            ProductImage(
+                                product_id=product.id,
+                                image_url=image_data["image_url"],
+                                alt_text=image_data.get("alt_text"),
+                                position=image_data.get("position", 0),
+                                is_primary=image_data.get(
+                                    "is_primary",
+                                    False,
+                                ),
+                            )
+                        )
+                    else:
+                        image.alt_text = image_data.get("alt_text")
+                        image.position = image_data.get("position", 0)
+                        image.is_primary = image_data.get(
+                            "is_primary",
+                            False,
+                        )
 
                 price = db.scalar(
                     select(ProductPrice).where(

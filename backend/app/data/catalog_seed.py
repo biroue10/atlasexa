@@ -244,6 +244,33 @@ CATALOG = [
                 "name": "Sony WH-1000XM5",
                 "slug": "sony-wh-1000xm5",
                 "description": "Premium wireless headphones focused on comfort, noise cancellation and travel.",
+                "image_url": "/products/sony-wh-1000xm5/01.webp",
+                "images": [
+                    {
+                        "image_url": "/products/sony-wh-1000xm5/01.webp",
+                        "alt_text": "Sony WH-1000XM5 headphones",
+                        "position": 1,
+                        "is_primary": True,
+                    },
+                    {
+                        "image_url": "/products/sony-wh-1000xm5/02.webp",
+                        "alt_text": "Sony WH-1000XM5 headphones alternate view",
+                        "position": 2,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/sony-wh-1000xm5/03.webp",
+                        "alt_text": "Sony WH-1000XM5 headphones detail view",
+                        "position": 3,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/sony-wh-1000xm5/04.webp",
+                        "alt_text": "Sony WH-1000XM5 headphones additional view",
+                        "position": 4,
+                        "is_primary": False,
+                    },
+                ],
                 "score": 94,
                 "score_explanation": "Excellent noise cancellation, comfort and balanced sound.",
                 "price": "399.99",

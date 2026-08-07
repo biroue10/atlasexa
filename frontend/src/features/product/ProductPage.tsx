@@ -13,6 +13,7 @@ export default function ProductPage() {
   const productSlug = slug ?? "";
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,6 +30,13 @@ export default function ProductPage() {
 
         if (!cancelled) {
           setProduct(data);
+
+          const primaryImage =
+            data.images.find((image) => image.is_primary)?.image_url ??
+            data.images[0]?.image_url ??
+            data.image_url;
+
+          setSelectedImage(primaryImage);
         }
       } catch {
         if (!cancelled) {
@@ -95,11 +103,43 @@ export default function ProductPage() {
 
         <section className="mt-8 rounded-3xl bg-white p-8 shadow-sm">
           <div className="grid gap-8 md:grid-cols-[320px_1fr] md:items-center">
-            <ProductImage
-              src={product.image_url}
-              alt={product.name}
-              className="aspect-square rounded-2xl border border-slate-200"
-            />
+            <div>
+              <ProductImage
+                src={selectedImage ?? product.image_url}
+                alt={product.name}
+                className="aspect-square rounded-2xl border border-slate-200"
+              />
+
+              {product.images.length > 1 && (
+                <div className="mt-4 grid grid-cols-4 gap-3">
+                  {product.images.map((image) => {
+                    const isSelected =
+                      image.image_url === selectedImage;
+
+                    return (
+                      <button
+                        key={image.image_url}
+                        type="button"
+                        onClick={() => setSelectedImage(image.image_url)}
+                        aria-label={`View ${image.alt_text ?? product.name}`}
+                        aria-pressed={isSelected}
+                        className={`overflow-hidden rounded-xl border-2 bg-white p-1 transition ${
+                          isSelected
+                            ? "border-blue-600"
+                            : "border-slate-200 hover:border-slate-400"
+                        }`}
+                      >
+                        <ProductImage
+                          src={image.image_url}
+                          alt={image.alt_text ?? product.name}
+                          className="aspect-square rounded-lg"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <div>
               <div className="flex flex-wrap gap-3">

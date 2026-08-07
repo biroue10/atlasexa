@@ -6,6 +6,7 @@ from app.models.catalog import (
     Brand,
     Category,
     Product,
+    ProductImage,
     ProductPrice,
 )
 
@@ -14,6 +15,7 @@ __all__ = [
     "Brand",
     "Category",
     "Product",
+    "ProductImage",
     "ProductPrice",
     "ProductSpecification",
     "ProductScore",

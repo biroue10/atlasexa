@@ -7,6 +7,15 @@ class ProductSpecificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class ProductImageResponse(BaseModel):
+    image_url: str
+    alt_text: str | None
+    position: int
+    is_primary: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProductPriceResponse(BaseModel):
     merchant: str
     price: float
@@ -27,6 +36,7 @@ class ProductDetailResponse(BaseModel):
     score: int
     score_explanation: str | None
     prices: list[ProductPriceResponse]
+    images: list[ProductImageResponse]
     specifications: list[ProductSpecificationResponse]
 
 

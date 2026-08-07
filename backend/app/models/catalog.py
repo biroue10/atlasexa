@@ -85,6 +85,30 @@ class Product(Base):
         cascade="all, delete-orphan",
     )
 
+    images: Mapped[list["ProductImage"]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        order_by="ProductImage.position",
+    )
+
+
+class ProductImage(Base):
+    __tablename__ = "product_images"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"),
+        index=True,
+    )
+    image_url: Mapped[str] = mapped_column(String(1000))
+    alt_text: Mapped[str | None] = mapped_column(String(255))
+    position: Mapped[int] = mapped_column(default=0)
+    is_primary: Mapped[bool] = mapped_column(default=False)
+
+    product: Mapped["Product"] = relationship(
+        back_populates="images",
+    )
+
 
 class ProductPrice(Base):
     __tablename__ = "product_prices"
