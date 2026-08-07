@@ -134,29 +134,105 @@ def seed_catalog_full() -> None:
                             False,
                         )
 
-                price = db.scalar(
-                    select(ProductPrice).where(
-                        ProductPrice.product_id == product.id,
-                        ProductPrice.merchant == "Demo Store",
-                    )
-                )
+                offers = product_data.get("offers")
 
-                if price is None:
-                    db.add(
-                        ProductPrice(
-                            product_id=product.id,
-                            merchant="Demo Store",
-                            price=Decimal(product_data["price"]),
-                            currency="USD",
-                            product_url=(
-                                "https://example.com/"
-                                f"{product_data['slug']}"
-                            ),
+                if offers:
+                    demo_price = db.scalar(
+                        select(ProductPrice).where(
+                            ProductPrice.product_id == product.id,
+                            ProductPrice.merchant == "Demo Store",
                         )
                     )
+
+                    if demo_price is not None:
+                        db.delete(demo_price)
+
+                    for offer_data in offers:
+                        price = db.scalar(
+                            select(ProductPrice).where(
+                                ProductPrice.product_id == product.id,
+                                ProductPrice.merchant
+                                == offer_data["merchant"],
+                                ProductPrice.market
+                                == offer_data.get("market", "US"),
+                            )
+                        )
+
+                        if price is None:
+                            db.add(
+                                ProductPrice(
+                                    product_id=product.id,
+                                    merchant=offer_data["merchant"],
+                                    price=Decimal(offer_data["price"]),
+                                    currency=offer_data.get(
+                                        "currency",
+                                        "USD",
+                                    ),
+                                    market=offer_data.get(
+                                        "market",
+                                        "US",
+                                    ),
+                                    country_code=offer_data.get(
+                                        "country_code",
+                                        "US",
+                                    ),
+                                    is_affiliate=offer_data.get(
+                                        "is_affiliate",
+                                        False,
+                                    ),
+                                    product_url=offer_data["product_url"],
+                                )
+                            )
+                        else:
+                            price.price = Decimal(
+                                offer_data["price"]
+                            )
+                            price.currency = offer_data.get(
+                                "currency",
+                                "USD",
+                            )
+                            price.country_code = offer_data.get(
+                                "country_code",
+                                "US",
+                            )
+                            price.is_affiliate = offer_data.get(
+                                "is_affiliate",
+                                False,
+                            )
+                            price.product_url = offer_data[
+                                "product_url"
+                            ]
                 else:
-                    price.price = Decimal(product_data["price"])
-                    price.currency = "USD"
+                    price = db.scalar(
+                        select(ProductPrice).where(
+                            ProductPrice.product_id == product.id,
+                            ProductPrice.merchant == "Demo Store",
+                        )
+                    )
+
+                    if price is None:
+                        db.add(
+                            ProductPrice(
+                                product_id=product.id,
+                                merchant="Demo Store",
+                                price=Decimal(product_data["price"]),
+                                currency="USD",
+                                market="US",
+                                country_code="US",
+                                is_affiliate=False,
+                                product_url=(
+                                    "https://example.com/"
+                                    f"{product_data['slug']}"
+                                ),
+                            )
+                        )
+                    else:
+                        price.price = Decimal(product_data["price"])
+                        price.currency = "USD"
+                        price.market = "US"
+                        price.country_code = "US"
+                        price.is_affiliate = False
+
 
                 score = db.scalar(
                     select(ProductScore).where(

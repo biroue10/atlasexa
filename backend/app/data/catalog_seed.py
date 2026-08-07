@@ -328,6 +328,17 @@ CATALOG = [
                 "score": 94,
                 "score_explanation": "Excellent noise cancellation, comfort and balanced sound.",
                 "price": "399.99",
+                "offers": [
+                    {
+                        "merchant": "Amazon.com",
+                        "price": "248.00",
+                        "currency": "USD",
+                        "market": "US",
+                        "country_code": "US",
+                        "is_affiliate": True,
+                        "product_url": "https://amzn.to/4wLlSSV",
+                    },
+                ],
                 "specifications": [
                     ("Type", "Over-ear wireless", "Design"),
                     ("Noise cancellation", "Active noise cancellation", "Audio"),

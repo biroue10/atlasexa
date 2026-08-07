@@ -2,6 +2,9 @@ export interface ProductPrice {
   merchant: string;
   price: number;
   currency: string;
+  market: string;
+  country_code: string;
+  is_affiliate: boolean;
   product_url: string;
 }
 

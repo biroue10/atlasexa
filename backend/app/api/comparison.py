@@ -70,6 +70,9 @@ async def compare_products(
                     merchant=price.merchant,
                     price=float(price.price),
                     currency=price.currency,
+                    market=price.market,
+                    country_code=price.country_code,
+                    is_affiliate=price.is_affiliate,
                     product_url=price.product_url,
                 )
                 for price in product.prices

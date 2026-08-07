@@ -121,6 +121,9 @@ class ProductPrice(Base):
     merchant: Mapped[str] = mapped_column(String(150))
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     currency: Mapped[str] = mapped_column(String(3), default="USD")
+    market: Mapped[str] = mapped_column(String(10), default="US", index=True)
+    country_code: Mapped[str] = mapped_column(String(2), default="US")
+    is_affiliate: Mapped[bool] = mapped_column(default=False)
     product_url: Mapped[str] = mapped_column(String(1000))
     checked_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

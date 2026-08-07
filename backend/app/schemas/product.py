@@ -20,6 +20,9 @@ class ProductPriceResponse(BaseModel):
     merchant: str
     price: float
     currency: str
+    market: str
+    country_code: str
+    is_affiliate: bool
     product_url: str
 
     model_config = ConfigDict(from_attributes=True)

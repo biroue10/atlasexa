@@ -158,6 +158,7 @@ export default function ProductPage() {
 
               <p className="mt-5 max-w-3xl leading-7 text-slate-600">
                 {product.description ?? "No product description available."}
+
               </p>
             </div>
           </div>
@@ -174,6 +175,7 @@ export default function ProductPage() {
 
               <p className="pb-1 text-lg font-medium text-emerald-700">
                 /100
+
               </p>
             </div>
 
@@ -200,18 +202,34 @@ export default function ProductPage() {
 
                   <p className="mt-1 font-medium text-slate-900">
                     {specification.name}
+
                   </p>
                 </div>
 
                 <p className="text-slate-600 sm:col-span-2 sm:self-center">
                   {specification.value}
+
                 </p>
               </div>
             ))}
           </div>
           <h2 className="mt-10 text-2xl font-semibold text-slate-900">
             Available offers
+
+          {product.prices.some((offer) => offer.is_affiliate) && (
+            <p className="mt-2 text-sm text-slate-500">
+              Some links are affiliate links. As an Amazon Associate I earn from
+              qualifying purchases.
+            </p>
+          )}
           </h2>
+
+          {product.prices.some((offer) => offer.is_affiliate) && (
+            <p className="mt-2 text-sm text-slate-500">
+              Some links are affiliate links. As an Amazon Associate I earn from
+              qualifying purchases.
+            </p>
+          )}
 
           <div className="mt-5 grid gap-4">
             {product.prices.map((offer) => (
@@ -229,7 +247,14 @@ export default function ProductPage() {
                       style: "currency",
                       currency: offer.currency,
                     })}
+
                   </p>
+
+                  {offer.is_affiliate && (
+                    <span className="mt-1 block text-xs text-slate-400">
+                      Affiliate link
+                    </span>
+                  )}
                 </div>
 
                 <a
@@ -238,7 +263,7 @@ export default function ProductPage() {
                   rel="noopener noreferrer sponsored"
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-800"
                 >
-                  View offer
+                  {offer.merchant === "Amazon.com" ? "View on Amazon" : "View offer"}
                   <ExternalLink size={17} />
                 </a>
               </article>
