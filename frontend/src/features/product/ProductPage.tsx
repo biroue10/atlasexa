@@ -2,6 +2,7 @@ import { ArrowLeft, ExternalLink, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import ProductImage from "@/components/product/ProductImage";
 import {
   getProduct,
   type ProductDetail,
@@ -93,23 +94,33 @@ export default function ProductPage() {
         </Link>
 
         <section className="mt-8 rounded-3xl bg-white p-8 shadow-sm">
-          <div className="flex flex-wrap gap-3">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">
-              {product.brand}
-            </span>
+          <div className="grid gap-8 md:grid-cols-[320px_1fr] md:items-center">
+            <ProductImage
+              src={product.image_url}
+              alt={product.name}
+              className="aspect-square rounded-2xl border border-slate-200"
+            />
 
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
-              {product.category}
-            </span>
+            <div>
+              <div className="flex flex-wrap gap-3">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">
+                  {product.brand}
+                </span>
+
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
+                  {product.category}
+                </span>
+              </div>
+
+              <h1 className="mt-6 text-4xl font-bold text-slate-900">
+                {product.name}
+              </h1>
+
+              <p className="mt-5 max-w-3xl leading-7 text-slate-600">
+                {product.description ?? "No product description available."}
+              </p>
+            </div>
           </div>
-
-          <h1 className="mt-6 text-4xl font-bold text-slate-900">
-            {product.name}
-          </h1>
-
-          <p className="mt-5 max-w-3xl leading-7 text-slate-600">
-            {product.description ?? "No product description available."}
-          </p>
 
           <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
             <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">

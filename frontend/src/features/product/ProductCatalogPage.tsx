@@ -6,6 +6,7 @@ import {
   getProducts,
   type ProductListResponse,
 } from "@/services/catalogApi";
+import ProductImage from "@/components/product/ProductImage";
 import {
   getCatalogOptions,
   type CatalogOptions,
@@ -402,6 +403,12 @@ export default function ProductCatalogPage() {
                   to={`/products/${product.slug}`}
                   className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                 >
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    className="mb-5 aspect-[4/3] rounded-xl"
+                  />
+
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm text-slate-500">
