@@ -407,6 +407,33 @@ CATALOG = [
                 "brand": {"name": "Apple", "slug": "apple"},
                 "name": "iPad Air",
                 "slug": "ipad-air",
+                "image_url": "/products/ipad-air/apple-ipad-air-front-view.webp",
+                "images": [
+                    {
+                        "image_url": "/products/ipad-air/apple-ipad-air-front-view.webp",
+                        "alt_text": "Apple iPad Air front view",
+                        "position": 1,
+                        "is_primary": True,
+                    },
+                    {
+                        "image_url": "/products/ipad-air/apple-ipad-air-side-view.webp",
+                        "alt_text": "Apple iPad Air side view",
+                        "position": 2,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/ipad-air/apple-ipad-air-detail-view.webp",
+                        "alt_text": "Apple iPad Air detail view",
+                        "position": 3,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/ipad-air/apple-ipad-air-lifestyle.webp",
+                        "alt_text": "Apple iPad Air lifestyle view",
+                        "position": 4,
+                        "is_primary": False,
+                    },
+                ],
                 "description": "Versatile tablet for productivity, creativity and entertainment.",
                 "score": 94,
                 "score_explanation": "Excellent performance, app ecosystem and portability.",
