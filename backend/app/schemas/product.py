@@ -41,6 +41,7 @@ class ProductListItemResponse(BaseModel):
     score: int
     minimum_price: float | None
     currency: str | None
+    best_for: str | None
 
 
 class ProductListResponse(BaseModel):

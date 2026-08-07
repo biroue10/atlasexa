@@ -17,20 +17,13 @@ def test_search_results_are_ranked_by_score() -> None:
 
     products = response.json()["products"]
 
-    assert len(products) >= 3
-
-    scores = [
-        product["score"]
-        for product in products
+    assert len(products) == 3
+    assert [product["score"] for product in products] == [91, 88, 84]
+    assert [product["slug"] for product in products] == [
+        "lenovo-ideapad-slim-5",
+        "dell-inspiron-14",
+        "asus-vivobook-15",
     ]
-
-    assert scores == sorted(scores, reverse=True)
-    assert products[0]["slug"] == "lenovo-ideapad-slim-5"
-
-    assert all(
-        product["price"] <= 900
-        for product in products
-    )
 
 
 def test_search_applies_budget_filter() -> None:

@@ -30,9 +30,7 @@ load_test_environment()
 
 from app.db.session import engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
-from scripts.seed_catalog import seed_catalog  # noqa: E402
-from scripts.seed_scores import seed_scores  # noqa: E402
-from scripts.seed_specifications import seed_specifications  # noqa: E402
+from scripts.seed_catalog_full import seed_catalog_full  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -64,9 +62,7 @@ def prepare_test_database() -> Generator[None, None, None]:
             )
         )
 
-    seed_catalog()
-    seed_specifications()
-    seed_scores()
+    seed_catalog_full()
 
     yield
 

@@ -96,6 +96,7 @@ async def list_products(
             selectinload(Product.category),
             selectinload(Product.prices),
             selectinload(Product.score),
+            selectinload(Product.specifications),
         )
     )
 
@@ -158,6 +159,15 @@ async def list_products(
         )
         lowest_price = prices[0] if prices else None
 
+        best_for = next(
+            (
+                specification.value
+                for specification in product.specifications
+                if specification.name.lower() == "best for"
+            ),
+            None,
+        )
+
         items.append(
             ProductListItemResponse(
                 id=product.id,
@@ -178,6 +188,7 @@ async def list_products(
                     if lowest_price
                     else None
                 ),
+                best_for=best_for,
             )
         )
 

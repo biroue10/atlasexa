@@ -12,5 +12,21 @@ def test_catalog_options_returns_brands_and_categories() -> None:
 
     data = response.json()
 
-    assert data["brands"] == ["ASUS", "Dell", "Lenovo"]
-    assert data["categories"] == ["Laptops"]
+    assert data["categories"] == [
+        "Headphones",
+        "Laptops",
+        "Monitors",
+        "Smartphones",
+        "Smartwatches",
+        "Tablets",
+    ]
+
+    assert data["brands"] == sorted(data["brands"], key=str.casefold)
+    assert {
+        "Apple",
+        "ASUS",
+        "Dell",
+        "Lenovo",
+        "Samsung",
+        "Sony",
+    }.issubset(set(data["brands"]))

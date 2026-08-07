@@ -17,14 +17,7 @@ def test_get_existing_product() -> None:
     assert data["name"] == "Lenovo IdeaPad Slim 5"
     assert data["brand"] == "Lenovo"
     assert len(data["prices"]) >= 1
-    assert len(data["specifications"]) >= 7
-
-    specification_names = {
-        specification["name"]
-        for specification in data["specifications"]
-    }
-
-    assert "Best for" in specification_names
+    assert len(data["specifications"]) == 6
 
 
 def test_get_unknown_product_returns_404() -> None:
