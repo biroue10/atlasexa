@@ -18,9 +18,9 @@ import {
   type SearchResponse,
 } from "@/services/searchApi";
 import {
-  getProducts,
-  type CatalogProduct,
-} from "@/services/catalogApi";
+  getHomeHighlights,
+  type HomeHighlightProduct,
+} from "@/services/homeApi";
 
 const suggestions = [
   "Laptop",
@@ -69,7 +69,7 @@ export default function HomePage() {
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [topProducts, setTopProducts] = useState<CatalogProduct[]>([]);
+  const [topProducts, setTopProducts] = useState<HomeHighlightProduct[]>([]);
   const [topProductsError, setTopProductsError] = useState("");
 
   const {
@@ -84,34 +84,11 @@ export default function HomePage() {
 
     async function loadTopProducts() {
       try {
-        const categoryNames = [
-          "Laptops",
-          "Smartphones",
-          "Headphones",
-          "Tablets",
-          "Monitors",
-          "Smartwatches",
-        ];
-
-        const responses = await Promise.all(
-          categoryNames.map((category) =>
-            getProducts(
-              1,
-              1,
-              {
-                category,
-                sortBy: "score",
-              },
-              controller.signal,
-            ),
-          ),
+        const products = await getHomeHighlights(
+          controller.signal,
         );
 
-        setTopProducts(
-          responses
-            .flatMap((response) => response.items)
-            .slice(0, 6),
-        );
+        setTopProducts(products);
       } catch (requestError) {
         if (
           requestError instanceof DOMException &&

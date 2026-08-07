@@ -11,6 +11,7 @@ from app.api.health import router as health_router
 from app.api.products import router as products_router
 from app.api.comparison import router as comparison_router
 from app.api.catalog import router as catalog_router
+from app.api.home import router as home_router
 
 app = FastAPI(
     title="Atlasexa API",
@@ -41,6 +42,7 @@ app.include_router(search_router)
 app.include_router(products_router)
 app.include_router(comparison_router)
 app.include_router(catalog_router)
+app.include_router(home_router)
 
 
 @app.get("/")
