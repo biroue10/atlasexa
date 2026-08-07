@@ -161,6 +161,33 @@ CATALOG = [
                 "brand": {"name": "Apple", "slug": "apple"},
                 "name": "iPhone 16",
                 "slug": "iphone-16",
+                "image_url": "/products/iphone-16/01.webp",
+                "images": [
+                    {
+                        "image_url": "/products/iphone-16/01.webp",
+                        "alt_text": "iPhone 16",
+                        "position": 1,
+                        "is_primary": True,
+                    },
+                    {
+                        "image_url": "/products/iphone-16/02.webp",
+                        "alt_text": "iPhone 16 alternate view",
+                        "position": 2,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/iphone-16/03.webp",
+                        "alt_text": "iPhone 16 lineup view",
+                        "position": 3,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/iphone-16/04.webp",
+                        "alt_text": "iPhone 16 additional view",
+                        "position": 4,
+                        "is_primary": False,
+                    },
+                ],
                 "description": (
                     "Premium smartphone focused on camera quality, "
                     "performance and long-term software support."
