@@ -48,6 +48,22 @@ class Product(Base):
     description: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(String(1000))
 
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="published",
+        index=True,
+    )
+
+    model_number: Mapped[str | None] = mapped_column(String(150))
+
+    release_year: Mapped[int | None] = mapped_column()
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
     brand_id: Mapped[int] = mapped_column(
         ForeignKey("brands.id"),
         index=True,

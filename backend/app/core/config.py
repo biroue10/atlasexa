@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     amazon_associate_tag: str = ""
 
+    admin_jwt_secret: str
+    admin_access_token_expire_minutes: int = 480
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
         env_file_encoding="utf-8",
