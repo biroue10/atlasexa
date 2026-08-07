@@ -81,6 +81,33 @@ CATALOG = [
                 "brand": {"name": "Apple", "slug": "apple"},
                 "name": "MacBook Air 13",
                 "slug": "macbook-air-13",
+                "image_url": "/products/macbook-air-13/01.webp",
+                "images": [
+                    {
+                        "image_url": "/products/macbook-air-13/01.webp",
+                        "alt_text": "MacBook Air 13",
+                        "position": 1,
+                        "is_primary": True,
+                    },
+                    {
+                        "image_url": "/products/macbook-air-13/02.webp",
+                        "alt_text": "MacBook Air 13 alternate view",
+                        "position": 2,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/macbook-air-13/03.webp",
+                        "alt_text": "MacBook Air 13 detail view",
+                        "position": 3,
+                        "is_primary": False,
+                    },
+                    {
+                        "image_url": "/products/macbook-air-13/04.webp",
+                        "alt_text": "MacBook Air 13 additional view",
+                        "position": 4,
+                        "is_primary": False,
+                    },
+                ],
                 "description": (
                     "Thin and lightweight laptop focused on battery life, "
                     "portability and smooth everyday performance."
