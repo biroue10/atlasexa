@@ -9,6 +9,7 @@ export interface CatalogProduct {
   score: number;
   minimum_price: number | null;
   currency: string | null;
+  best_for: string | null;
 }
 
 export interface ProductListResponse {

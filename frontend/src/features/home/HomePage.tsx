@@ -330,6 +330,17 @@ export default function HomePage() {
                     {product.description ?? "No description available."}
                   </p>
 
+                  {product.best_for && (
+                    <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Best for
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-slate-800">
+                        {product.best_for}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-auto pt-6">
                     <p className="text-sm text-slate-500">
                       Starting from
