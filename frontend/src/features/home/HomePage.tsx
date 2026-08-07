@@ -84,14 +84,34 @@ export default function HomePage() {
 
     async function loadTopProducts() {
       try {
-        const data = await getProducts(
-          1,
-          6,
-          { sortBy: "score" },
-          controller.signal,
+        const categoryNames = [
+          "Laptops",
+          "Smartphones",
+          "Headphones",
+          "Tablets",
+          "Monitors",
+          "Smartwatches",
+        ];
+
+        const responses = await Promise.all(
+          categoryNames.map((category) =>
+            getProducts(
+              1,
+              1,
+              {
+                category,
+                sortBy: "score",
+              },
+              controller.signal,
+            ),
+          ),
         );
 
-        setTopProducts(data.items);
+        setTopProducts(
+          responses
+            .flatMap((response) => response.items)
+            .slice(0, 6),
+        );
       } catch (requestError) {
         if (
           requestError instanceof DOMException &&
@@ -100,7 +120,7 @@ export default function HomePage() {
           return;
         }
 
-        setTopProductsError("Unable to load top rated products.");
+        setTopProductsError("Unable to load top picks.");
       }
     }
 
@@ -256,11 +276,11 @@ export default function HomePage() {
               </p>
 
               <h2 className="mt-3 text-3xl font-bold text-slate-900">
-                Top rated products
+                Top picks by category
               </h2>
 
               <p className="mt-3 text-slate-500">
-                Discover the highest-rated products currently available in Atlasexa.
+                Discover the highest-rated product in each Atlasexa category.
               </p>
             </div>
 
