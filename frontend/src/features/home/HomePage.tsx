@@ -8,7 +8,7 @@ import {
   Tablet,
   Watch,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 
@@ -17,6 +17,10 @@ import {
   searchProducts,
   type SearchResponse,
 } from "@/services/searchApi";
+import {
+  getProducts,
+  type CatalogProduct,
+} from "@/services/catalogApi";
 
 const suggestions = [
   "Laptop",
@@ -65,6 +69,8 @@ export default function HomePage() {
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [topProducts, setTopProducts] = useState<CatalogProduct[]>([]);
+  const [topProductsError, setTopProductsError] = useState("");
 
   const {
     addProduct,
@@ -72,6 +78,38 @@ export default function HomePage() {
     isSelected,
     products: comparisonProducts,
   } = useComparison();
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadTopProducts() {
+      try {
+        const data = await getProducts(
+          1,
+          6,
+          { sortBy: "score" },
+          controller.signal,
+        );
+
+        setTopProducts(data.items);
+      } catch (requestError) {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === "AbortError"
+        ) {
+          return;
+        }
+
+        setTopProductsError("Unable to load top rated products.");
+      }
+    }
+
+    void loadTopProducts();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -208,6 +246,93 @@ export default function HomePage() {
               );
             })}
           </div>
+        </section>
+
+        <section className="mt-24">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+                Top picks
+              </p>
+
+              <h2 className="mt-3 text-3xl font-bold text-slate-900">
+                Top rated products
+              </h2>
+
+              <p className="mt-3 text-slate-500">
+                Discover the highest-rated products currently available in Atlasexa.
+              </p>
+            </div>
+
+            <Link
+              to="/products?sort_by=score&page=1"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
+              View all products →
+            </Link>
+          </div>
+
+          {topProductsError && (
+            <p className="mt-8 text-sm text-red-600" role="alert">
+              {topProductsError}
+            </p>
+          )}
+
+          {topProducts.length > 0 && (
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {topProducts.map((product) => (
+                <Link
+                  key={product.slug}
+                  to={`/products/${product.slug}`}
+                  className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-blue-600">
+                        {product.category}
+                      </p>
+
+                      <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                        {product.name}
+                      </h3>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {product.brand}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                      {product.score}/100
+                    </span>
+                  </div>
+
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600">
+                    {product.description ?? "No description available."}
+                  </p>
+
+                  <div className="mt-auto pt-6">
+                    <p className="text-sm text-slate-500">
+                      Starting from
+                    </p>
+
+                    <p className="mt-1 text-xl font-bold text-slate-900">
+                      {product.minimum_price !== null &&
+                      product.currency
+                        ? product.minimum_price.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: product.currency,
+                          })
+                        : "Unavailable"}
+                    </p>
+
+                    <p className="mt-5 text-sm font-medium text-blue-600">
+                      View product →
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mt-24 rounded-3xl bg-slate-950 px-8 py-12 text-white">
