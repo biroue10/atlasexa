@@ -10,6 +10,7 @@ import AdminDashboardPage from "@/features/admin/AdminDashboardPage";
 import AdminLoginPage from "@/features/admin/AdminLoginPage";
 import AdminProductsPage from "@/features/admin/AdminProductsPage";
 import AdminProductCreatePage from "@/features/admin/AdminProductCreatePage";
+import AdminProductEditPage from "@/features/admin/AdminProductEditPage";
 import ComparisonBar from "@/features/comparison/ComparisonBar";
 import ComparisonPage from "@/features/comparison/ComparisonPage";
 import ComparisonProvider from "@/features/comparison/ComparisonProvider";
@@ -75,6 +76,11 @@ export default function App() {
           <Route
             path="/admin/products/new"
             element={<AdminProductCreatePage />}
+          />
+
+          <Route
+            path="/admin/products/:id"
+            element={<AdminProductEditPage />}
           />
 
           <Route
