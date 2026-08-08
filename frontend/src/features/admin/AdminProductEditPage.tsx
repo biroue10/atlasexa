@@ -12,6 +12,7 @@ import {
   type ChangeEvent,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -63,6 +64,12 @@ export default function AdminProductEditPage() {
   const [draggedImageId, setDraggedImageId] =
     useState<number | null>(null);
   const [error, setError] = useState("");
+  const [lastSavedAt, setLastSavedAt] =
+    useState<Date | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] =
+    useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const hasHydratedForm = useRef(false);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -178,6 +185,101 @@ export default function AdminProductEditPage() {
     };
   }, [loadProduct, productId]);
 
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!hasHydratedForm.current) {
+      hasHydratedForm.current = true;
+      return;
+    }
+
+    if (
+      !Number.isInteger(productId) ||
+      productId <= 0 ||
+      !name.trim() ||
+      !slug.trim() ||
+      !brand.trim() ||
+      !category.trim()
+    ) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      async function autoSave() {
+        setAutoSaveStatus("saving");
+
+        try {
+          const updated = await updateAdminProduct(
+            productId,
+            {
+              name,
+              slug,
+              brand,
+              category,
+              description:
+                description.trim() || null,
+              model_number:
+                modelNumber.trim() || null,
+              release_year:
+                releaseYear
+                  ? Number(releaseYear)
+                  : null,
+              status,
+              score:
+                score !== ""
+                  ? Number(score)
+                  : null,
+              score_explanation:
+                scoreExplanation.trim() || null,
+              specifications,
+              offers,
+            },
+          );
+
+          setProduct(updated);
+          setLastSavedAt(new Date());
+          setAutoSaveStatus("saved");
+        } catch (requestError) {
+          if (
+            requestError instanceof Error &&
+            requestError.message === "UNAUTHORIZED"
+          ) {
+            navigate("/admin/login", {
+              replace: true,
+            });
+            return;
+          }
+
+          setAutoSaveStatus("error");
+        }
+      }
+
+      void autoSave();
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    loading,
+    productId,
+    name,
+    slug,
+    brand,
+    category,
+    description,
+    modelNumber,
+    releaseYear,
+    status,
+    score,
+    scoreExplanation,
+    specifications,
+    offers,
+    navigate,
+  ]);
+
   if (!getAdminToken()) {
     return (
       <Navigate
@@ -189,6 +291,7 @@ export default function AdminProductEditPage() {
 
   async function saveProduct() {
     setSaving(true);
+    setAutoSaveStatus("saving");
     setError("");
 
     try {
@@ -222,6 +325,10 @@ export default function AdminProductEditPage() {
         );
 
       setProduct(updated);
+      setLastSavedAt(new Date());
+      setAutoSaveStatus("saved");
+      setLastSavedAt(new Date());
+      setAutoSaveStatus("saved");
     } catch (requestError) {
       if (
         requestError instanceof Error &&
@@ -235,6 +342,8 @@ export default function AdminProductEditPage() {
         setError(
           "Unable to save product.",
         );
+        setAutoSaveStatus("error");
+        setAutoSaveStatus("error");
       }
     } finally {
       setSaving(false);
@@ -402,6 +511,66 @@ export default function AdminProductEditPage() {
     }
   }
 
+  const quality = (() => {
+    const checks = [
+      {
+        label: "Identity",
+        ok: Boolean(
+          name.trim() &&
+          slug.trim() &&
+          brand.trim() &&
+          category.trim(),
+        ),
+      },
+      {
+        label: "Content",
+        ok: description.trim().length >= 120,
+      },
+      {
+        label: "Specifications",
+        ok:
+          specifications.filter(
+            (item) =>
+              item.name.trim() &&
+              item.value.trim(),
+          ).length >= 5,
+      },
+      {
+        label: "Images",
+        ok: (product?.images.length ?? 0) >= 4,
+      },
+      {
+        label: "Score",
+        ok:
+          score !== "" &&
+          Number(score) >= 0 &&
+          Number(score) <= 100,
+      },
+      {
+        label: "Offers",
+        ok:
+          offers.filter(
+            (offer) =>
+              offer.merchant.trim() &&
+              offer.product_url.trim() &&
+              offer.price > 0,
+          ).length >= 1,
+      },
+    ];
+
+    const completed = checks.filter(
+      (check) => check.ok,
+    ).length;
+
+    return {
+      checks,
+      percent: Math.round(
+        (completed / checks.length) * 100,
+      ),
+      complete: completed === checks.length,
+    };
+  })();
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
@@ -434,6 +603,36 @@ export default function AdminProductEditPage() {
               Edit product details, images,
               offers and publication status.
             </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span
+                className={
+                  autoSaveStatus === "error"
+                    ? "font-semibold text-red-600"
+                    : autoSaveStatus === "saved"
+                      ? "font-semibold text-emerald-600"
+                      : "text-slate-500"
+                }
+              >
+                {autoSaveStatus === "saving" &&
+                  "Saving changes..."}
+
+                {autoSaveStatus === "saved" &&
+                  "All changes saved"}
+
+                {autoSaveStatus === "error" &&
+                  "Autosave failed"}
+
+                {autoSaveStatus === "idle" &&
+                  "No unsaved changes"}
+              </span>
+
+              {lastSavedAt && (
+                <span className="text-slate-400">
+                  · {lastSavedAt.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -862,6 +1061,64 @@ export default function AdminProductEditPage() {
 
             {tab === 6 && (
               <div>
+                <div className="mb-7 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex items-start justify-between gap-5">
+                    <div>
+                      <p className="text-sm font-bold text-slate-950">
+                        Product quality
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Complete the required product information before publication.
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-slate-950">
+                        {quality.percent}%
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        complete
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-slate-950 transition-all"
+                      style={{
+                        width: `${quality.percent}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                    {quality.checks.map((check) => (
+                      <div
+                        key={check.label}
+                        className="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm"
+                      >
+                        <span className="text-slate-600">
+                          {check.label}
+                        </span>
+
+                        <span
+                          className={
+                            check.ok
+                              ? "font-semibold text-emerald-600"
+                              : "font-semibold text-amber-600"
+                          }
+                        >
+                          {check.ok
+                            ? "Complete"
+                            : "Missing"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <label className="grid gap-2">
                   <span className="text-sm font-semibold">
                     Publication status
@@ -880,7 +1137,10 @@ export default function AdminProductEditPage() {
                       Draft
                     </option>
 
-                    <option value="published">
+                    <option
+                      value="published"
+                      disabled={!quality.complete}
+                    >
                       Published
                     </option>
 
@@ -888,6 +1148,12 @@ export default function AdminProductEditPage() {
                       Archived
                     </option>
                   </select>
+
+                  {!quality.complete && (
+                    <p className="mt-2 text-xs font-medium text-amber-600">
+                      Complete all required sections before publishing.
+                    </p>
+                  )}
                 </label>
 
                 <button
