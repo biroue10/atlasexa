@@ -257,6 +257,9 @@ def create_admin_product(
         image_url=None,
         status=payload.status,
         model_number=payload.model_number,
+        gtin=payload.gtin,
+        sku=payload.sku,
+        mpn=payload.mpn,
         release_year=payload.release_year,
         seo_title=payload.seo_title,
         meta_description=payload.meta_description,
@@ -546,6 +549,9 @@ def build_admin_product_detail(
         category=product.category.name,
         status=product.status,
         model_number=product.model_number,
+        gtin=product.gtin,
+        sku=product.sku,
+        mpn=product.mpn,
         release_year=product.release_year,
         image_url=product.image_url,
         score=(
@@ -592,6 +598,9 @@ def build_admin_product_detail(
                 market=offer.market,
                 country_code=offer.country_code,
                 is_affiliate=offer.is_affiliate,
+                availability=offer.availability,
+                item_condition=offer.item_condition,
+                price_valid_until=offer.price_valid_until,
                 product_url=offer.product_url,
             )
             for offer in product.prices
@@ -712,6 +721,9 @@ def update_admin_product(
     product.brand_id = brand.id
     product.category_id = category.id
     product.model_number = payload.model_number
+    product.gtin = payload.gtin
+    product.sku = payload.sku
+    product.mpn = payload.mpn
     product.release_year = payload.release_year
     product.status = payload.status
 

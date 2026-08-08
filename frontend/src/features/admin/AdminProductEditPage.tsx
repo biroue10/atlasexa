@@ -80,6 +80,9 @@ export default function AdminProductEditPage() {
     useState("");
   const [modelNumber, setModelNumber] =
     useState("");
+  const [gtin, setGtin] = useState("");
+  const [sku, setSku] = useState("");
+  const [mpn, setMpn] = useState("");
   const [releaseYear, setReleaseYear] =
     useState("");
   const [status, setStatus] =
@@ -129,6 +132,9 @@ export default function AdminProductEditPage() {
       setCategory(data.category);
       setDescription(data.description ?? "");
       setModelNumber(data.model_number ?? "");
+      setGtin(data.gtin ?? "");
+      setSku(data.sku ?? "");
+      setMpn(data.mpn ?? "");
       setReleaseYear(
         data.release_year
           ? String(data.release_year)
@@ -197,6 +203,9 @@ export default function AdminProductEditPage() {
           market: offer.market,
           country_code: offer.country_code,
           is_affiliate: offer.is_affiliate,
+          availability: offer.availability,
+          item_condition: offer.item_condition,
+          price_valid_until: offer.price_valid_until,
           product_url: offer.product_url,
         })),
       );
@@ -271,6 +280,12 @@ export default function AdminProductEditPage() {
                 description.trim() || null,
               model_number:
                 modelNumber.trim() || null,
+              gtin:
+                gtin.trim() || null,
+              sku:
+                sku.trim() || null,
+              mpn:
+                mpn.trim() || null,
               release_year:
                 releaseYear
                   ? Number(releaseYear)
@@ -282,6 +297,17 @@ export default function AdminProductEditPage() {
                   : null,
               score_explanation:
                 scoreExplanation.trim() || null,
+              seo_title:
+                seoTitle.trim() || null,
+              meta_description:
+                metaDescription.trim() || null,
+              canonical_url:
+                canonicalUrl.trim() || null,
+              og_title:
+                ogTitle.trim() || null,
+              og_description:
+                ogDescription.trim() || null,
+              is_indexable: indexable,
               specifications,
               offers,
             },
@@ -320,6 +346,9 @@ export default function AdminProductEditPage() {
     category,
     description,
     modelNumber,
+    gtin,
+    sku,
+    mpn,
     releaseYear,
     status,
     score,
@@ -412,6 +441,12 @@ export default function AdminProductEditPage() {
               description.trim() || null,
             model_number:
               modelNumber.trim() || null,
+            gtin:
+              gtin.trim() || null,
+            sku:
+              sku.trim() || null,
+            mpn:
+              mpn.trim() || null,
             release_year:
               releaseYear
                 ? Number(releaseYear)
@@ -443,8 +478,6 @@ export default function AdminProductEditPage() {
       setProduct(updated);
       setLastSavedAt(new Date());
       setAutoSaveStatus("saved");
-      setLastSavedAt(new Date());
-      setAutoSaveStatus("saved");
     } catch (requestError) {
       if (
         requestError instanceof Error &&
@@ -458,7 +491,6 @@ export default function AdminProductEditPage() {
         setError(
           "Unable to save product.",
         );
-        setAutoSaveStatus("error");
         setAutoSaveStatus("error");
       }
     } finally {
@@ -844,6 +876,24 @@ export default function AdminProductEditPage() {
                 />
 
                 <Field
+                  label="GTIN / UPC / EAN"
+                  value={gtin}
+                  onChange={setGtin}
+                />
+
+                <Field
+                  label="SKU"
+                  value={sku}
+                  onChange={setSku}
+                />
+
+                <Field
+                  label="MPN"
+                  value={mpn}
+                  onChange={setMpn}
+                />
+
+                <Field
                   label="Release year"
                   value={releaseYear}
                   onChange={setReleaseYear}
@@ -1137,6 +1187,49 @@ export default function AdminProductEditPage() {
                       />
 
                       <Field
+                        label="Availability"
+                        value={offer.availability ?? ""}
+                        onChange={(value) => {
+                          const next = [...offers];
+                          next[index] = {
+                            ...next[index],
+                            availability:
+                              value || null,
+                          };
+                          setOffers(next);
+                        }}
+                      />
+
+                      <Field
+                        label="Item condition"
+                        value={offer.item_condition ?? ""}
+                        onChange={(value) => {
+                          const next = [...offers];
+                          next[index] = {
+                            ...next[index],
+                            item_condition:
+                              value || null,
+                          };
+                          setOffers(next);
+                        }}
+                      />
+
+                      <Field
+                        label="Price valid until"
+                        value={offer.price_valid_until ?? ""}
+                        type="date"
+                        onChange={(value) => {
+                          const next = [...offers];
+                          next[index] = {
+                            ...next[index],
+                            price_valid_until:
+                              value || null,
+                          };
+                          setOffers(next);
+                        }}
+                      />
+
+                      <Field
                         label="URL"
                         value={offer.product_url}
                         onChange={(value) => {
@@ -1164,6 +1257,9 @@ export default function AdminProductEditPage() {
                         market: "US",
                         country_code: "US",
                         is_affiliate: false,
+                        availability: null,
+                        item_condition: null,
+                        price_valid_until: null,
                         product_url: "",
                       },
                     ])

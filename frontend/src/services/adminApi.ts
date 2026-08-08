@@ -128,6 +128,9 @@ export interface AdminProductListItem {
   minimum_price: number | null;
   currency: string | null;
   model_number: string | null;
+  gtin: string | null;
+  sku: string | null;
+  mpn: string | null;
   release_year: number | null;
   updated_at: string;
 }
@@ -186,6 +189,9 @@ export interface AdminProductOfferInput {
   market: string;
   country_code: string;
   is_affiliate: boolean;
+  availability: string | null;
+  item_condition: string | null;
+  price_valid_until: string | null;
   product_url: string;
 }
 
@@ -196,6 +202,9 @@ export interface AdminProductCreatePayload {
   slug: string;
   description?: string | null;
   model_number?: string | null;
+  gtin?: string | null;
+  sku?: string | null;
+  mpn?: string | null;
   release_year?: number | null;
   status: string;
   score?: number | null;
@@ -347,6 +356,9 @@ export interface AdminProductOffer {
   market: string;
   country_code: string;
   is_affiliate: boolean;
+  availability: string | null;
+  item_condition: string | null;
+  price_valid_until: string | null;
   product_url: string;
 }
 
@@ -359,6 +371,9 @@ export interface AdminProductDetail {
   category: string;
   status: string;
   model_number: string | null;
+  gtin: string | null;
+  sku: string | null;
+  mpn: string | null;
   release_year: number | null;
   image_url: string | null;
   score: number | null;

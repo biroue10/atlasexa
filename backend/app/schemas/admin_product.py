@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +17,9 @@ class AdminProductListItem(BaseModel):
     minimum_price: float | None
     currency: str | None
     model_number: str | None
+    gtin: str | None
+    sku: str | None
+    mpn: str | None
     release_year: int | None
     updated_at: datetime
 
@@ -39,6 +42,9 @@ class AdminProductOfferInput(BaseModel):
     market: str = "US"
     country_code: str = "US"
     is_affiliate: bool = False
+    availability: str | None = None
+    item_condition: str | None = None
+    price_valid_until: date | None = None
     product_url: str
 
 
@@ -65,6 +71,9 @@ class AdminProductOfferResponse(BaseModel):
     market: str
     country_code: str
     is_affiliate: bool
+    availability: str | None
+    item_condition: str | None
+    price_valid_until: date | None
     product_url: str
 
 
@@ -75,6 +84,9 @@ class AdminProductCreateRequest(BaseModel):
     slug: str
     description: str | None = None
     model_number: str | None = None
+    gtin: str | None = None
+    sku: str | None = None
+    mpn: str | None = None
     release_year: int | None = None
     status: str = "draft"
     score: int | None = None
@@ -132,6 +144,9 @@ class AdminProductUpdateRequest(BaseModel):
     category: str
     description: str | None = None
     model_number: str | None = None
+    gtin: str | None = None
+    sku: str | None = None
+    mpn: str | None = None
     release_year: int | None = None
     status: str
     score: int | None = None

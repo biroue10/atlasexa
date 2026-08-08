@@ -117,6 +117,9 @@ export default function AdminProductCreatePage() {
         market: "US",
         country_code: "US",
         is_affiliate: false,
+        availability: null,
+        item_condition: null,
+        price_valid_until: null,
         product_url: "",
       },
     ]);
