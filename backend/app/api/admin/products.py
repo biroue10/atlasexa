@@ -327,7 +327,9 @@ def create_admin_product(
 from fastapi import File, Form, UploadFile
 
 from app.services.product_images import (
+    move_product_image_directory,
     process_product_image,
+    rollback_product_image_directory,
 )
 from app.schemas.admin_product import (
     AdminProductImageResponse,
@@ -759,6 +761,7 @@ def update_admin_product(
         product,
     )
 
+    old_slug = product.slug
     slug = payload.slug.strip()
 
     duplicate = db.scalar(
@@ -1000,7 +1003,45 @@ def update_admin_product(
         existing.price_valid_until = offer.price_valid_until
         existing.product_url = offer.product_url.strip()
 
-    db.commit()
+    image_url_mapping: dict[str, str] = {}
+
+    if old_slug != slug:
+        image_url_mapping = (
+            move_product_image_directory(
+                old_slug=old_slug,
+                new_slug=slug,
+            )
+        )
+
+        if image_url_mapping:
+            for image in product.images:
+                new_url = image_url_mapping.get(
+                    image.image_url
+                )
+
+                if new_url:
+                    image.image_url = new_url
+
+            if product.image_url:
+                product.image_url = (
+                    image_url_mapping.get(
+                        product.image_url,
+                        product.image_url,
+                    )
+                )
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+
+        if old_slug != slug:
+            rollback_product_image_directory(
+                old_slug=old_slug,
+                new_slug=slug,
+            )
+
+        raise
 
     product = db.get(Product, product_id)
 
