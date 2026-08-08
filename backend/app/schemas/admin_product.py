@@ -17,9 +17,6 @@ class AdminProductListItem(BaseModel):
     minimum_price: float | None
     currency: str | None
     model_number: str | None
-    gtin: str | None
-    sku: str | None
-    mpn: str | None
     release_year: int | None
     updated_at: datetime
 
