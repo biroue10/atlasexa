@@ -31,6 +31,12 @@ export interface ProductDetail {
   category: string;
   score: number;
   score_explanation: string | null;
+  seo_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  is_indexable: boolean;
   prices: ProductPrice[];
   images: ProductImage[];
   specifications: ProductSpecification[];

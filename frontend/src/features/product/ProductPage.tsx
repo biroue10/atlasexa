@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import ProductImage from "@/components/product/ProductImage";
+import SeoHead from "@/components/seo/SeoHead";
 import {
   getProduct,
   type ProductDetail,
@@ -139,8 +140,38 @@ export default function ProductPage() {
     );
   }
 
+  const seoTitle =
+    product.seo_title?.trim() ||
+    `${product.name} Review, Specs & Best Price | Atlasexa`;
+
+  const seoDescription =
+    product.meta_description?.trim() ||
+    product.description?.slice(0, 160) ||
+    `Compare ${product.name} specifications, Atlasexa score and current offers.`;
+
+  const canonicalUrl =
+    product.canonical_url?.trim() ||
+    `https://atlasexa.com/products/${product.slug}`;
+
+  const primarySeoImage =
+    product.images.find(
+      (image) => image.is_primary,
+    )?.image_url ??
+    product.image_url;
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
+    <>
+      <SeoHead
+        title={seoTitle}
+        description={seoDescription}
+        canonical={canonicalUrl}
+        image={primarySeoImage}
+        ogTitle={product.og_title}
+        ogDescription={product.og_description}
+        indexable={product.is_indexable}
+      />
+
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <nav className="mb-7 flex items-center gap-2 text-sm text-slate-500">
           <Link
@@ -468,6 +499,7 @@ export default function ProductPage() {
           </section>
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

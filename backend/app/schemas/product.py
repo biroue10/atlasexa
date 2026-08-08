@@ -38,6 +38,12 @@ class ProductDetailResponse(BaseModel):
     category: str
     score: int
     score_explanation: str | None
+    seo_title: str | None
+    meta_description: str | None
+    canonical_url: str | None
+    og_title: str | None
+    og_description: str | None
+    is_indexable: bool
     prices: list[ProductPriceResponse]
     images: list[ProductImageResponse]
     specifications: list[ProductSpecificationResponse]

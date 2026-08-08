@@ -65,6 +65,12 @@ async def compare_products(
             score_explanation=(
                 product.score.explanation if product.score else None
             ),
+            seo_title=product.seo_title,
+            meta_description=product.meta_description,
+            canonical_url=product.canonical_url,
+            og_title=product.og_title,
+            og_description=product.og_description,
+            is_indexable=product.is_indexable,
             prices=[
                 ProductPriceResponse(
                     merchant=price.merchant,
