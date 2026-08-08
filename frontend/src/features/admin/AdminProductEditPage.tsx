@@ -43,6 +43,7 @@ const tabs = [
   "Images",
   "Score",
   "Offers",
+  "SEO",
   "Publishing",
 ];
 
@@ -89,6 +90,17 @@ export default function AdminProductEditPage() {
     setScoreExplanation,
   ] = useState("");
 
+  const [seoTitle, setSeoTitle] = useState("");
+  const [metaDescription, setMetaDescription] =
+    useState("");
+  const [ogTitle, setOgTitle] = useState("");
+  const [ogDescription, setOgDescription] =
+    useState("");
+  const [canonicalUrl, setCanonicalUrl] =
+    useState("");
+  const [indexable, setIndexable] =
+    useState(true);
+
   const [
     specifications,
     setSpecifications,
@@ -130,6 +142,30 @@ export default function AdminProductEditPage() {
       );
       setScoreExplanation(
         data.score_explanation ?? "",
+      );
+
+      setSeoTitle(
+        `${data.name} Review, Specs & Best Price | Atlasexa`,
+      );
+
+      setMetaDescription(
+        data.description
+          ? data.description.slice(0, 155)
+          : `Compare ${data.name} specifications, Atlasexa score and current offers.`,
+      );
+
+      setOgTitle(
+        `${data.name} | Atlasexa`,
+      );
+
+      setOgDescription(
+        data.description
+          ? data.description.slice(0, 180)
+          : `Discover ${data.name} on Atlasexa.`,
+      );
+
+      setCanonicalUrl(
+        `https://atlasexa.com/products/${data.slug}`,
       );
 
       setSpecifications(
@@ -186,7 +222,7 @@ export default function AdminProductEditPage() {
   }, [loadProduct, productId]);
 
   useEffect(() => {
-    if (loading) {
+  if (loading) {
       return;
     }
 
@@ -279,6 +315,56 @@ export default function AdminProductEditPage() {
     offers,
     navigate,
   ]);
+
+  const seoQuality = (() => {
+    const checks = [
+      {
+        label: "SEO title",
+        ok:
+          seoTitle.trim().length >= 30 &&
+          seoTitle.trim().length <= 60,
+      },
+      {
+        label: "Meta description",
+        ok:
+          metaDescription.trim().length >= 120 &&
+          metaDescription.trim().length <= 160,
+      },
+      {
+        label: "Canonical URL",
+        ok: canonicalUrl.startsWith(
+          "https://atlasexa.com/products/",
+        ),
+      },
+      {
+        label: "OG title",
+        ok: ogTitle.trim().length >= 20,
+      },
+      {
+        label: "OG description",
+        ok: ogDescription.trim().length >= 80,
+      },
+      {
+        label: "Primary image",
+        ok: Boolean(
+          product?.images.some(
+            (image) => image.is_primary,
+          ),
+        ),
+      },
+    ];
+
+    const completed = checks.filter(
+      (check) => check.ok,
+    ).length;
+
+    return {
+      checks,
+      percent: Math.round(
+        (completed / checks.length) * 100,
+      ),
+    };
+  })();
 
   if (!getAdminToken()) {
     return (
@@ -1060,6 +1146,156 @@ export default function AdminProductEditPage() {
             )}
 
             {tab === 6 && (
+              <div>
+                <div className="flex items-start justify-between gap-5">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-950">
+                      SEO
+                    </h2>
+
+                    <p className="mt-2 text-sm text-slate-500">
+                      Control how this product appears in search engines and social sharing.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-950 px-4 py-3 text-right text-white">
+                    <p className="text-2xl font-bold">
+                      {seoQuality.percent}%
+                    </p>
+
+                    <p className="text-xs text-slate-400">
+                      SEO complete
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-7 grid gap-5">
+                  <Field
+                    label="SEO title"
+                    value={seoTitle}
+                    onChange={setSeoTitle}
+                  />
+
+                  <p className="-mt-3 text-xs text-slate-400">
+                    {seoTitle.length}/60 characters
+                  </p>
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Meta description
+                    </span>
+
+                    <textarea
+                      rows={4}
+                      value={metaDescription}
+                      onChange={(event) =>
+                        setMetaDescription(
+                          event.target.value,
+                        )
+                      }
+                      className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                    />
+                  </label>
+
+                  <p className="-mt-3 text-xs text-slate-400">
+                    {metaDescription.length}/160 characters
+                  </p>
+
+                  <Field
+                    label="Canonical URL"
+                    value={canonicalUrl}
+                    onChange={setCanonicalUrl}
+                  />
+
+                  <Field
+                    label="Open Graph title"
+                    value={ogTitle}
+                    onChange={setOgTitle}
+                  />
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Open Graph description
+                    </span>
+
+                    <textarea
+                      rows={4}
+                      value={ogDescription}
+                      onChange={(event) =>
+                        setOgDescription(
+                          event.target.value,
+                        )
+                      }
+                      className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                    />
+                  </label>
+
+                  <label className="inline-flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={indexable}
+                      onChange={(event) =>
+                        setIndexable(
+                          event.target.checked,
+                        )
+                      }
+                      className="h-5 w-5"
+                    />
+
+                    <span className="text-sm font-semibold text-slate-700">
+                      Allow search engines to index this product
+                    </span>
+                  </label>
+                </div>
+
+                <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    Google preview
+                  </p>
+
+                  <p className="mt-4 text-xl text-blue-700">
+                    {seoTitle || name}
+                  </p>
+
+                  <p className="mt-1 text-sm text-emerald-700">
+                    {canonicalUrl}
+                  </p>
+
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                    {metaDescription}
+                  </p>
+                </div>
+
+                <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                  {seoQuality.checks.map(
+                    (check) => (
+                      <div
+                        key={check.label}
+                        className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"
+                      >
+                        <span className="text-slate-600">
+                          {check.label}
+                        </span>
+
+                        <span
+                          className={
+                            check.ok
+                              ? "font-semibold text-emerald-600"
+                              : "font-semibold text-amber-600"
+                          }
+                        >
+                          {check.ok
+                            ? "Complete"
+                            : "Missing"}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+
+            {tab === 7 && (
               <div>
                 <div className="mb-7 rounded-2xl border border-slate-200 bg-slate-50 p-5">
                   <div className="flex items-start justify-between gap-5">
