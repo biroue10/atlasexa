@@ -30,12 +30,14 @@ class AdminProductListResponse(BaseModel):
 
 
 class AdminProductSpecificationInput(BaseModel):
+    id: int | None = None
     name: str
     value: str
     group: str = "General"
 
 
 class AdminProductOfferInput(BaseModel):
+    id: int | None = None
     merchant: str
     price: float
     currency: str = "USD"

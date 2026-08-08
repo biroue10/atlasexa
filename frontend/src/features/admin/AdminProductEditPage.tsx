@@ -189,6 +189,7 @@ export default function AdminProductEditPage() {
 
       setSpecifications(
         data.specifications.map((item) => ({
+          id: item.id,
           name: item.name,
           value: item.value,
           group: item.group,
@@ -197,6 +198,7 @@ export default function AdminProductEditPage() {
 
       setOffers(
         data.offers.map((offer) => ({
+          id: offer.id,
           merchant: offer.merchant,
           price: offer.price,
           currency: offer.currency,

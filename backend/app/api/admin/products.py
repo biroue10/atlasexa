@@ -827,34 +827,90 @@ def update_admin_product(
     product.og_description = payload.og_description
     product.is_indexable = payload.is_indexable
 
-    product.seo_title = payload.seo_title
-    product.meta_description = payload.meta_description
-    product.canonical_url = payload.canonical_url
-    product.og_title = payload.og_title
-    product.og_description = payload.og_description
-    product.is_indexable = payload.is_indexable
-
-    for specification in list(product.specifications):
-        db.delete(specification)
-
-    db.flush()
-
-    for specification in payload.specifications:
+    valid_specifications = [
+        specification
+        for specification in payload.specifications
         if (
             specification.name.strip()
             and specification.value.strip()
-        ):
+        )
+    ]
+
+    normalized_specification_names = [
+        specification.name.strip().lower()
+        for specification in valid_specifications
+    ]
+
+    if (
+        len(normalized_specification_names)
+        != len(set(normalized_specification_names))
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Specification names must be unique.",
+        )
+
+    existing_specifications = {
+        specification.id: specification
+        for specification in product.specifications
+    }
+
+    retained_specification_ids = {
+        specification.id
+        for specification in valid_specifications
+        if specification.id is not None
+    }
+
+    unknown_specification_ids = (
+        retained_specification_ids
+        - set(existing_specifications)
+    )
+
+    if unknown_specification_ids:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid specification id.",
+        )
+
+    for specification_id, specification in (
+        existing_specifications.items()
+    ):
+        if specification_id not in retained_specification_ids:
+            db.delete(specification)
+
+    # Temporarily rename retained rows so specification renames/swaps
+    # cannot violate the product_id + name unique constraint.
+    for specification in valid_specifications:
+        if specification.id is None:
+            continue
+
+        existing = existing_specifications[specification.id]
+        existing.name = (
+            f"__atlasexa_tmp_{product.id}_{existing.id}__"
+        )
+
+    db.flush()
+
+    for specification in valid_specifications:
+        name = specification.name.strip()
+        value = specification.value.strip()
+        group = specification.group.strip() or "General"
+
+        if specification.id is None:
             db.add(
                 ProductSpecification(
                     product_id=product.id,
-                    name=specification.name.strip(),
-                    value=specification.value.strip(),
-                    group=(
-                        specification.group.strip()
-                        or "General"
-                    ),
+                    name=name,
+                    value=value,
+                    group=group,
                 )
             )
+            continue
+
+        existing = existing_specifications[specification.id]
+        existing.name = name
+        existing.value = value
+        existing.group = group
 
     if payload.score is None:
         if product.score is not None:
@@ -877,16 +933,43 @@ def update_admin_product(
                 payload.score_explanation
             )
 
-    for offer in list(product.prices):
-        db.delete(offer)
-
-    db.flush()
-
-    for offer in payload.offers:
+    valid_offers = [
+        offer
+        for offer in payload.offers
         if (
             offer.merchant.strip()
             and offer.product_url.strip()
-        ):
+        )
+    ]
+
+    existing_offers = {
+        offer.id: offer
+        for offer in product.prices
+    }
+
+    retained_offer_ids = {
+        offer.id
+        for offer in valid_offers
+        if offer.id is not None
+    }
+
+    unknown_offer_ids = (
+        retained_offer_ids
+        - set(existing_offers)
+    )
+
+    if unknown_offer_ids:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid offer id.",
+        )
+
+    for offer_id, existing in existing_offers.items():
+        if offer_id not in retained_offer_ids:
+            db.delete(existing)
+
+    for offer in valid_offers:
+        if offer.id is None:
             db.add(
                 ProductPrice(
                     product_id=product.id,
@@ -896,9 +979,26 @@ def update_admin_product(
                     market=offer.market.upper(),
                     country_code=offer.country_code.upper(),
                     is_affiliate=offer.is_affiliate,
+                    availability=offer.availability,
+                    item_condition=offer.item_condition,
+                    price_valid_until=offer.price_valid_until,
                     product_url=offer.product_url.strip(),
                 )
             )
+            continue
+
+        existing = existing_offers[offer.id]
+
+        existing.merchant = offer.merchant.strip()
+        existing.price = Decimal(str(offer.price))
+        existing.currency = offer.currency.upper()
+        existing.market = offer.market.upper()
+        existing.country_code = offer.country_code.upper()
+        existing.is_affiliate = offer.is_affiliate
+        existing.availability = offer.availability
+        existing.item_condition = offer.item_condition
+        existing.price_valid_until = offer.price_valid_until
+        existing.product_url = offer.product_url.strip()
 
     db.commit()
 

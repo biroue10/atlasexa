@@ -177,12 +177,14 @@ export async function getAdminProducts(
 }
 
 export interface AdminProductSpecificationInput {
+  id?: number;
   name: string;
   value: string;
   group: string;
 }
 
 export interface AdminProductOfferInput {
+  id?: number;
   merchant: string;
   price: number;
   currency: string;
