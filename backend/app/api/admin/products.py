@@ -537,6 +537,94 @@ from app.schemas.admin_product import (
 )
 
 
+def validate_product_for_publication(
+    payload: AdminProductUpdateRequest,
+    product: Product,
+) -> None:
+    """Prevent incomplete products from being published."""
+
+    if payload.status != "published":
+        return
+
+    missing: list[str] = []
+
+    if not payload.name.strip():
+        missing.append("name")
+
+    if not payload.slug.strip():
+        missing.append("slug")
+
+    if not payload.brand.strip():
+        missing.append("brand")
+
+    if not payload.category.strip():
+        missing.append("category")
+
+    description = (
+        payload.description.strip()
+        if payload.description
+        else ""
+    )
+
+    if len(description) < 120:
+        missing.append(
+            "description (minimum 120 characters)"
+        )
+
+    valid_specifications = [
+        item
+        for item in payload.specifications
+        if item.name.strip()
+        and item.value.strip()
+    ]
+
+    if len(valid_specifications) < 5:
+        missing.append(
+            "at least 5 specifications"
+        )
+
+    if len(product.images) < 4:
+        missing.append(
+            "at least 4 product images"
+        )
+
+    if (
+        payload.score is None
+        or payload.score < 0
+        or payload.score > 100
+    ):
+        missing.append(
+            "valid Atlasexa score"
+        )
+
+    valid_offers = [
+        offer
+        for offer in payload.offers
+        if (
+            offer.merchant.strip()
+            and offer.product_url.strip()
+            and offer.price > 0
+        )
+    ]
+
+    if not valid_offers:
+        missing.append(
+            "at least one valid offer"
+        )
+
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "PRODUCT_NOT_READY_FOR_PUBLICATION",
+                "message": (
+                    "Product does not meet publication requirements."
+                ),
+                "missing": missing,
+            },
+        )
+
+
 def build_admin_product_detail(
     product: Product,
 ) -> AdminProductDetailResponse:
@@ -665,6 +753,11 @@ def update_admin_product(
             status_code=422,
             detail="Invalid product status.",
         )
+
+    validate_product_for_publication(
+        payload,
+        product,
+    )
 
     slug = payload.slug.strip()
 
