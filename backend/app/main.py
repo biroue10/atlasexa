@@ -14,6 +14,7 @@ from app.api.catalog import router as catalog_router
 from app.api.home import router as home_router
 from app.api.admin.auth import router as admin_auth_router
 from app.api.admin.dashboard import router as admin_dashboard_router
+from app.api.admin.products import router as admin_products_router
 
 app = FastAPI(
     title="Atlasexa API",
@@ -47,6 +48,7 @@ app.include_router(catalog_router)
 app.include_router(home_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_dashboard_router)
+app.include_router(admin_products_router)
 
 
 @app.get("/")

@@ -8,6 +8,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import SiteHeader from "@/components/layout/SiteHeader";
 import AdminDashboardPage from "@/features/admin/AdminDashboardPage";
 import AdminLoginPage from "@/features/admin/AdminLoginPage";
+import AdminProductsPage from "@/features/admin/AdminProductsPage";
 import ComparisonBar from "@/features/comparison/ComparisonBar";
 import ComparisonPage from "@/features/comparison/ComparisonPage";
 import ComparisonProvider from "@/features/comparison/ComparisonProvider";
@@ -63,6 +64,11 @@ export default function App() {
           <Route
             path="/admin"
             element={<AdminDashboardPage />}
+          />
+
+          <Route
+            path="/admin/products"
+            element={<AdminProductsPage />}
           />
 
           <Route

@@ -113,3 +113,62 @@ export async function getAdminDashboard(): Promise<AdminDashboard> {
 
   return response.json() as Promise<AdminDashboard>;
 }
+
+export interface AdminProductListItem {
+  id: number;
+  name: string;
+  slug: string;
+  brand: string;
+  category: string;
+  status: string;
+  score: number | null;
+  image_url: string | null;
+  image_count: number;
+  offer_count: number;
+  minimum_price: number | null;
+  currency: string | null;
+  model_number: string | null;
+  release_year: number | null;
+  updated_at: string;
+}
+
+export interface AdminProductListResponse {
+  items: AdminProductListItem[];
+  total: number;
+}
+
+export async function getAdminProducts(
+  query = "",
+  status = "",
+): Promise<AdminProductListResponse> {
+  const params = new URLSearchParams();
+
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+
+  if (status) {
+    params.set("status", status);
+  }
+
+  const suffix = params.toString()
+    ? `?${params.toString()}`
+    : "";
+
+  const response = await adminFetch(
+    `/api/admin/products${suffix}`,
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to load admin products.",
+    );
+  }
+
+  return response.json() as Promise<AdminProductListResponse>;
+}
