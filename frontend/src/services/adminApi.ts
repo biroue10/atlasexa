@@ -200,6 +200,12 @@ export interface AdminProductCreatePayload {
   status: string;
   score?: number | null;
   score_explanation?: string | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  canonical_url?: string | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  is_indexable?: boolean;
   specifications: AdminProductSpecificationInput[];
   offers: AdminProductOfferInput[];
 }
@@ -357,6 +363,12 @@ export interface AdminProductDetail {
   image_url: string | null;
   score: number | null;
   score_explanation: string | null;
+  seo_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  is_indexable: boolean;
   specifications: AdminProductSpecification[];
   images: AdminProductImage[];
   offers: AdminProductOffer[];

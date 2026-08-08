@@ -79,6 +79,12 @@ class AdminProductCreateRequest(BaseModel):
     status: str = "draft"
     score: int | None = None
     score_explanation: str | None = None
+    seo_title: str | None = None
+    meta_description: str | None = None
+    canonical_url: str | None = None
+    og_title: str | None = None
+    og_description: str | None = None
+    is_indexable: bool = True
     specifications: list[AdminProductSpecificationInput] = Field(
         default_factory=list
     )
@@ -106,6 +112,12 @@ class AdminProductDetailResponse(BaseModel):
     image_url: str | None
     score: int | None
     score_explanation: str | None
+    seo_title: str | None
+    meta_description: str | None
+    canonical_url: str | None
+    og_title: str | None
+    og_description: str | None
+    is_indexable: bool
     specifications: list[AdminProductSpecificationResponse]
     images: list[AdminProductImageResponse]
     offers: list[AdminProductOfferResponse]
@@ -124,6 +136,12 @@ class AdminProductUpdateRequest(BaseModel):
     status: str
     score: int | None = None
     score_explanation: str | None = None
+    seo_title: str | None = None
+    meta_description: str | None = None
+    canonical_url: str | None = None
+    og_title: str | None = None
+    og_description: str | None = None
+    is_indexable: bool = True
     specifications: list[AdminProductSpecificationInput] = Field(
         default_factory=list
     )

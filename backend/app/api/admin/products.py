@@ -258,6 +258,12 @@ def create_admin_product(
         status=payload.status,
         model_number=payload.model_number,
         release_year=payload.release_year,
+        seo_title=payload.seo_title,
+        meta_description=payload.meta_description,
+        canonical_url=payload.canonical_url,
+        og_title=payload.og_title,
+        og_description=payload.og_description,
+        is_indexable=payload.is_indexable,
         brand_id=brand.id,
         category_id=category.id,
     )
@@ -552,6 +558,12 @@ def build_admin_product_detail(
             if product.score
             else None
         ),
+        seo_title=product.seo_title,
+        meta_description=product.meta_description,
+        canonical_url=product.canonical_url,
+        og_title=product.og_title,
+        og_description=product.og_description,
+        is_indexable=product.is_indexable,
         specifications=[
             AdminProductSpecificationResponse(
                 id=item.id,
@@ -702,6 +714,20 @@ def update_admin_product(
     product.model_number = payload.model_number
     product.release_year = payload.release_year
     product.status = payload.status
+
+    product.seo_title = payload.seo_title
+    product.meta_description = payload.meta_description
+    product.canonical_url = payload.canonical_url
+    product.og_title = payload.og_title
+    product.og_description = payload.og_description
+    product.is_indexable = payload.is_indexable
+
+    product.seo_title = payload.seo_title
+    product.meta_description = payload.meta_description
+    product.canonical_url = payload.canonical_url
+    product.og_title = payload.og_title
+    product.og_description = payload.og_description
+    product.is_indexable = payload.is_indexable
 
     for specification in list(product.specifications):
         db.delete(specification)

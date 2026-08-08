@@ -145,27 +145,40 @@ export default function AdminProductEditPage() {
       );
 
       setSeoTitle(
-        `${data.name} Review, Specs & Best Price | Atlasexa`,
+        data.seo_title ??
+          `${data.name} Review, Specs & Best Price | Atlasexa`,
       );
 
       setMetaDescription(
-        data.description
-          ? data.description.slice(0, 155)
-          : `Compare ${data.name} specifications, Atlasexa score and current offers.`,
+        data.meta_description ??
+          (
+            data.description
+              ? data.description.slice(0, 155)
+              : `Compare ${data.name} specifications, Atlasexa score and current offers.`
+          ),
       );
 
       setOgTitle(
-        `${data.name} | Atlasexa`,
+        data.og_title ??
+          `${data.name} | Atlasexa`,
       );
 
       setOgDescription(
-        data.description
-          ? data.description.slice(0, 180)
-          : `Discover ${data.name} on Atlasexa.`,
+        data.og_description ??
+          (
+            data.description
+              ? data.description.slice(0, 180)
+              : `Discover ${data.name} on Atlasexa.`
+          ),
       );
 
       setCanonicalUrl(
-        `https://atlasexa.com/products/${data.slug}`,
+        data.canonical_url ??
+          `https://atlasexa.com/products/${data.slug}`,
+      );
+
+      setIndexable(
+        data.is_indexable,
       );
 
       setSpecifications(
@@ -313,6 +326,12 @@ export default function AdminProductEditPage() {
     scoreExplanation,
     specifications,
     offers,
+    seoTitle,
+    metaDescription,
+    canonicalUrl,
+    ogTitle,
+    ogDescription,
+    indexable,
     navigate,
   ]);
 
@@ -405,6 +424,17 @@ export default function AdminProductEditPage() {
             score_explanation:
               scoreExplanation.trim()
                 || null,
+            seo_title:
+              seoTitle.trim() || null,
+            meta_description:
+              metaDescription.trim() || null,
+            canonical_url:
+              canonicalUrl.trim() || null,
+            og_title:
+              ogTitle.trim() || null,
+            og_description:
+              ogDescription.trim() || null,
+            is_indexable: indexable,
             specifications,
             offers,
           },

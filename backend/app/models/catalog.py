@@ -58,6 +58,13 @@ class Product(Base):
 
     release_year: Mapped[int | None] = mapped_column()
 
+    seo_title: Mapped[str | None] = mapped_column(String(255))
+    meta_description: Mapped[str | None] = mapped_column(String(500))
+    canonical_url: Mapped[str | None] = mapped_column(String(1000))
+    og_title: Mapped[str | None] = mapped_column(String(255))
+    og_description: Mapped[str | None] = mapped_column(String(500))
+    is_indexable: Mapped[bool] = mapped_column(default=True)
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
