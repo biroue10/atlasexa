@@ -313,3 +313,208 @@ def create_admin_product(
         slug=product.slug,
         status=product.status,
     )
+
+
+from fastapi import File, Form, UploadFile
+
+from app.services.product_images import (
+    process_product_image,
+)
+from app.schemas.admin_product import (
+    AdminProductImageResponse,
+)
+
+
+@router.post(
+    "/{product_id}/images",
+    response_model=list[AdminProductImageResponse],
+)
+async def upload_product_images(
+    product_id: int,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+    files: list[UploadFile] = File(...),
+    alt_text: str = Form(default=""),
+) -> list[AdminProductImageResponse]:
+    product = db.get(Product, product_id)
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found.",
+        )
+
+    if len(files) > 8:
+        raise HTTPException(
+            status_code=422,
+            detail="A maximum of 8 images can be uploaded at once.",
+        )
+
+    current_count = db.scalar(
+        select(func.count(ProductImage.id))
+        .where(
+            ProductImage.product_id
+            == product.id,
+        )
+    ) or 0
+
+    created: list[ProductImage] = []
+
+    for offset, file in enumerate(files):
+        position = current_count + offset
+
+        image_url, _ = await process_product_image(
+            file=file,
+            product_slug=product.slug,
+            position=position,
+        )
+
+        image = ProductImage(
+            product_id=product.id,
+            image_url=image_url,
+            alt_text=(
+                alt_text.strip()
+                or f"{product.name} product image"
+            ),
+            position=position,
+            is_primary=(current_count == 0 and offset == 0),
+        )
+
+        db.add(image)
+        db.flush()
+
+        created.append(image)
+
+        if image.is_primary:
+            product.image_url = image_url
+
+    db.commit()
+
+    return [
+        AdminProductImageResponse(
+            id=image.id,
+            image_url=image.image_url,
+            alt_text=image.alt_text,
+            position=image.position,
+            is_primary=image.is_primary,
+        )
+        for image in created
+    ]
+
+
+@router.delete(
+    "/{product_id}/images/{image_id}",
+    status_code=204,
+)
+def delete_product_image(
+    product_id: int,
+    image_id: int,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    product = db.get(Product, product_id)
+
+    image = db.get(
+        ProductImage,
+        image_id,
+    )
+
+    if (
+        product is None
+        or image is None
+        or image.product_id != product.id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Image not found.",
+        )
+
+    was_primary = image.is_primary
+
+    db.delete(image)
+    db.flush()
+
+    if was_primary:
+        next_image = db.scalar(
+            select(ProductImage)
+            .where(
+                ProductImage.product_id
+                == product.id,
+            )
+            .order_by(
+                ProductImage.position.asc(),
+            )
+        )
+
+        if next_image is not None:
+            next_image.is_primary = True
+            product.image_url = (
+                next_image.image_url
+            )
+        else:
+            product.image_url = None
+
+    db.commit()
+
+
+@router.post(
+    "/{product_id}/images/{image_id}/primary",
+    response_model=AdminProductImageResponse,
+)
+def set_primary_product_image(
+    product_id: int,
+    image_id: int,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> AdminProductImageResponse:
+    product = db.get(Product, product_id)
+
+    image = db.get(
+        ProductImage,
+        image_id,
+    )
+
+    if (
+        product is None
+        or image is None
+        or image.product_id != product.id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Image not found.",
+        )
+
+    images = db.scalars(
+        select(ProductImage)
+        .where(
+            ProductImage.product_id
+            == product.id,
+        )
+    ).all()
+
+    for product_image in images:
+        product_image.is_primary = (
+            product_image.id == image.id
+        )
+
+    product.image_url = image.image_url
+
+    db.commit()
+    db.refresh(image)
+
+    return AdminProductImageResponse(
+        id=image.id,
+        image_url=image.image_url,
+        alt_text=image.alt_text,
+        position=image.position,
+        is_primary=image.is_primary,
+    )

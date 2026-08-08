@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     admin_jwt_secret: str
     admin_access_token_expire_minutes: int = 480
 
+    public_api_url: str = "http://localhost:8000"
+    media_root: str = "storage"
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
         env_file_encoding="utf-8",

@@ -60,3 +60,11 @@ class AdminProductCreateResponse(BaseModel):
     id: int
     slug: str
     status: str
+
+
+class AdminProductImageResponse(BaseModel):
+    id: int
+    image_url: str
+    alt_text: str | None
+    position: int
+    is_primary: bool

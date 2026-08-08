@@ -237,3 +237,90 @@ export async function createAdminProduct(
 
   return response.json();
 }
+
+
+export interface AdminProductImage {
+  id: number;
+  image_url: string;
+  alt_text: string | null;
+  position: number;
+  is_primary: boolean;
+}
+
+export async function uploadAdminProductImages(
+  productId: number,
+  files: File[],
+  altText = "",
+): Promise<AdminProductImage[]> {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  formData.append(
+    "alt_text",
+    altText,
+  );
+
+  const response = await adminFetch(
+    `/api/admin/products/${productId}/images`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to upload images.",
+    );
+  }
+
+  return response.json();
+}
+
+
+export async function deleteAdminProductImage(
+  productId: number,
+  imageId: number,
+): Promise<void> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}/images/${imageId}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to delete image.",
+    );
+  }
+}
+
+
+export async function setAdminProductPrimaryImage(
+  productId: number,
+  imageId: number,
+): Promise<AdminProductImage> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}/images/${imageId}/primary`,
+    {
+      method: "POST",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to set primary image.",
+    );
+  }
+
+  return response.json();
+}
