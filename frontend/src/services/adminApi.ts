@@ -172,3 +172,68 @@ export async function getAdminProducts(
 
   return response.json() as Promise<AdminProductListResponse>;
 }
+
+export interface AdminProductSpecificationInput {
+  name: string;
+  value: string;
+  group: string;
+}
+
+export interface AdminProductOfferInput {
+  merchant: string;
+  price: number;
+  currency: string;
+  market: string;
+  country_code: string;
+  is_affiliate: boolean;
+  product_url: string;
+}
+
+export interface AdminProductCreatePayload {
+  name: string;
+  brand: string;
+  category: string;
+  slug: string;
+  description?: string | null;
+  model_number?: string | null;
+  release_year?: number | null;
+  status: string;
+  score?: number | null;
+  score_explanation?: string | null;
+  specifications: AdminProductSpecificationInput[];
+  offers: AdminProductOfferInput[];
+}
+
+export async function createAdminProduct(
+  payload: AdminProductCreatePayload,
+): Promise<{
+  id: number;
+  slug: string;
+  status: string;
+}> {
+  const response = await adminFetch(
+    "/api/admin/products",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 409) {
+    throw new Error("SLUG_EXISTS");
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to create product.");
+  }
+
+  return response.json();
+}

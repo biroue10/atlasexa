@@ -166,3 +166,150 @@ def list_admin_products(
         items=items,
         total=len(items),
     )
+
+
+from decimal import Decimal
+from fastapi import HTTPException, status as http_status
+
+from app.models.specification import ProductSpecification
+from app.schemas.admin_product import (
+    AdminProductCreateRequest,
+    AdminProductCreateResponse,
+)
+
+
+@router.post(
+    "",
+    response_model=AdminProductCreateResponse,
+    status_code=201,
+)
+def create_admin_product(
+    payload: AdminProductCreateRequest,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> AdminProductCreateResponse:
+    allowed_statuses = {
+        "draft",
+        "published",
+        "archived",
+    }
+
+    if payload.status not in allowed_statuses:
+        raise HTTPException(
+            status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid product status.",
+        )
+
+    existing = db.scalar(
+        select(Product).where(
+            Product.slug == payload.slug.strip(),
+        )
+    )
+
+    if existing:
+        raise HTTPException(
+            status_code=http_status.HTTP_409_CONFLICT,
+            detail="A product with this slug already exists.",
+        )
+
+    brand_name = payload.brand.strip()
+    category_name = payload.category.strip()
+
+    brand = db.scalar(
+        select(Brand).where(
+            func.lower(Brand.name)
+            == brand_name.lower(),
+        )
+    )
+
+    if brand is None:
+        brand = Brand(
+            name=brand_name,
+            slug=brand_name.lower()
+            .replace(" ", "-"),
+        )
+        db.add(brand)
+        db.flush()
+
+    category = db.scalar(
+        select(Category).where(
+            func.lower(Category.name)
+            == category_name.lower(),
+        )
+    )
+
+    if category is None:
+        category = Category(
+            name=category_name,
+            slug=category_name.lower()
+            .replace(" ", "-"),
+        )
+        db.add(category)
+        db.flush()
+
+    product = Product(
+        name=payload.name.strip(),
+        slug=payload.slug.strip(),
+        description=payload.description,
+        image_url=None,
+        status=payload.status,
+        model_number=payload.model_number,
+        release_year=payload.release_year,
+        brand_id=brand.id,
+        category_id=category.id,
+    )
+
+    db.add(product)
+    db.flush()
+
+    for specification in payload.specifications:
+        db.add(
+            ProductSpecification(
+                product_id=product.id,
+                name=specification.name.strip(),
+                value=specification.value.strip(),
+                group=specification.group.strip()
+                or "General",
+            )
+        )
+
+    if payload.score is not None:
+        if payload.score < 0 or payload.score > 100:
+            raise HTTPException(
+                status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Score must be between 0 and 100.",
+            )
+
+        db.add(
+            ProductScore(
+                product_id=product.id,
+                overall_score=payload.score,
+                explanation=payload.score_explanation,
+            )
+        )
+
+    for offer in payload.offers:
+        db.add(
+            ProductPrice(
+                product_id=product.id,
+                merchant=offer.merchant.strip(),
+                price=Decimal(str(offer.price)),
+                currency=offer.currency.upper(),
+                market=offer.market.upper(),
+                country_code=offer.country_code.upper(),
+                is_affiliate=offer.is_affiliate,
+                product_url=offer.product_url.strip(),
+            )
+        )
+
+    db.commit()
+    db.refresh(product)
+
+    return AdminProductCreateResponse(
+        id=product.id,
+        slug=product.slug,
+        status=product.status,
+    )
