@@ -324,3 +324,161 @@ export async function setAdminProductPrimaryImage(
 
   return response.json();
 }
+
+
+export interface AdminProductSpecification {
+  id: number;
+  name: string;
+  value: string;
+  group: string;
+}
+
+export interface AdminProductOffer {
+  id: number;
+  merchant: string;
+  price: number;
+  currency: string;
+  market: string;
+  country_code: string;
+  is_affiliate: boolean;
+  product_url: string;
+}
+
+export interface AdminProductDetail {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  brand: string;
+  category: string;
+  status: string;
+  model_number: string | null;
+  release_year: number | null;
+  image_url: string | null;
+  score: number | null;
+  score_explanation: string | null;
+  specifications: AdminProductSpecification[];
+  images: AdminProductImage[];
+  offers: AdminProductOffer[];
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getAdminProduct(
+  productId: number,
+): Promise<AdminProductDetail> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}`,
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 404) {
+    throw new Error("NOT_FOUND");
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load product.");
+  }
+
+  return response.json();
+}
+
+export async function updateAdminProduct(
+  productId: number,
+  payload: AdminProductCreatePayload,
+): Promise<AdminProductDetail> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (response.status === 409) {
+    throw new Error("SLUG_EXISTS");
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to update product.");
+  }
+
+  return response.json();
+}
+
+
+export async function reorderAdminProductImages(
+  productId: number,
+  images: AdminProductImage[],
+): Promise<AdminProductImage[]> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}/images/order`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        images: images.map(
+          (image, position) => ({
+            id: image.id,
+            position,
+          }),
+        ),
+      }),
+    },
+  );
+
+  if (response.status === 401) {
+    clearAdminToken();
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to reorder images.",
+    );
+  }
+
+  return response.json();
+}
+
+
+export async function updateAdminProductImage(
+  productId: number,
+  imageId: number,
+  altText: string,
+): Promise<AdminProductImage> {
+  const response = await adminFetch(
+    `/api/admin/products/${productId}/images/${imageId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        alt_text: altText,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Unable to update image.",
+    );
+  }
+
+  return response.json();
+}

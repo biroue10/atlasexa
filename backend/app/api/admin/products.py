@@ -518,3 +518,398 @@ def set_primary_product_image(
         position=image.position,
         is_primary=image.is_primary,
     )
+
+
+from app.schemas.admin_product import (
+    AdminProductDetailResponse,
+    AdminProductOfferResponse,
+    AdminProductSpecificationResponse,
+    AdminProductUpdateRequest,
+)
+
+
+def build_admin_product_detail(
+    product: Product,
+) -> AdminProductDetailResponse:
+    return AdminProductDetailResponse(
+        id=product.id,
+        name=product.name,
+        slug=product.slug,
+        description=product.description,
+        brand=product.brand.name,
+        category=product.category.name,
+        status=product.status,
+        model_number=product.model_number,
+        release_year=product.release_year,
+        image_url=product.image_url,
+        score=(
+            product.score.overall_score
+            if product.score
+            else None
+        ),
+        score_explanation=(
+            product.score.explanation
+            if product.score
+            else None
+        ),
+        specifications=[
+            AdminProductSpecificationResponse(
+                id=item.id,
+                name=item.name,
+                value=item.value,
+                group=item.group,
+            )
+            for item in product.specifications
+        ],
+        images=[
+            AdminProductImageResponse(
+                id=image.id,
+                image_url=image.image_url,
+                alt_text=image.alt_text,
+                position=image.position,
+                is_primary=image.is_primary,
+            )
+            for image in product.images
+        ],
+        offers=[
+            AdminProductOfferResponse(
+                id=offer.id,
+                merchant=offer.merchant,
+                price=float(offer.price),
+                currency=offer.currency,
+                market=offer.market,
+                country_code=offer.country_code,
+                is_affiliate=offer.is_affiliate,
+                product_url=offer.product_url,
+            )
+            for offer in product.prices
+        ],
+        created_at=product.created_at,
+        updated_at=product.updated_at,
+    )
+
+
+@router.get(
+    "/{product_id}",
+    response_model=AdminProductDetailResponse,
+)
+def get_admin_product(
+    product_id: int,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> AdminProductDetailResponse:
+    product = db.get(Product, product_id)
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found.",
+        )
+
+    return build_admin_product_detail(product)
+
+
+@router.patch(
+    "/{product_id}",
+    response_model=AdminProductDetailResponse,
+)
+def update_admin_product(
+    product_id: int,
+    payload: AdminProductUpdateRequest,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> AdminProductDetailResponse:
+    product = db.get(Product, product_id)
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found.",
+        )
+
+    allowed_statuses = {
+        "draft",
+        "published",
+        "archived",
+    }
+
+    if payload.status not in allowed_statuses:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid product status.",
+        )
+
+    slug = payload.slug.strip()
+
+    duplicate = db.scalar(
+        select(Product).where(
+            Product.slug == slug,
+            Product.id != product.id,
+        )
+    )
+
+    if duplicate is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A product with this slug already exists.",
+        )
+
+    brand_name = payload.brand.strip()
+
+    brand = db.scalar(
+        select(Brand).where(
+            func.lower(Brand.name)
+            == brand_name.lower(),
+        )
+    )
+
+    if brand is None:
+        brand = Brand(
+            name=brand_name,
+            slug=brand_name.lower().replace(" ", "-"),
+        )
+        db.add(brand)
+        db.flush()
+
+    category_name = payload.category.strip()
+
+    category = db.scalar(
+        select(Category).where(
+            func.lower(Category.name)
+            == category_name.lower(),
+        )
+    )
+
+    if category is None:
+        category = Category(
+            name=category_name,
+            slug=category_name.lower().replace(" ", "-"),
+        )
+        db.add(category)
+        db.flush()
+
+    product.name = payload.name.strip()
+    product.slug = slug
+    product.description = payload.description
+    product.brand_id = brand.id
+    product.category_id = category.id
+    product.model_number = payload.model_number
+    product.release_year = payload.release_year
+    product.status = payload.status
+
+    for specification in list(product.specifications):
+        db.delete(specification)
+
+    db.flush()
+
+    for specification in payload.specifications:
+        if (
+            specification.name.strip()
+            and specification.value.strip()
+        ):
+            db.add(
+                ProductSpecification(
+                    product_id=product.id,
+                    name=specification.name.strip(),
+                    value=specification.value.strip(),
+                    group=(
+                        specification.group.strip()
+                        or "General"
+                    ),
+                )
+            )
+
+    if payload.score is None:
+        if product.score is not None:
+            db.delete(product.score)
+    else:
+        if not 0 <= payload.score <= 100:
+            raise HTTPException(
+                status_code=422,
+                detail="Score must be between 0 and 100.",
+            )
+
+        if product.score is None:
+            product.score = ProductScore(
+                overall_score=payload.score,
+                explanation=payload.score_explanation,
+            )
+        else:
+            product.score.overall_score = payload.score
+            product.score.explanation = (
+                payload.score_explanation
+            )
+
+    for offer in list(product.prices):
+        db.delete(offer)
+
+    db.flush()
+
+    for offer in payload.offers:
+        if (
+            offer.merchant.strip()
+            and offer.product_url.strip()
+        ):
+            db.add(
+                ProductPrice(
+                    product_id=product.id,
+                    merchant=offer.merchant.strip(),
+                    price=Decimal(str(offer.price)),
+                    currency=offer.currency.upper(),
+                    market=offer.market.upper(),
+                    country_code=offer.country_code.upper(),
+                    is_affiliate=offer.is_affiliate,
+                    product_url=offer.product_url.strip(),
+                )
+            )
+
+    db.commit()
+
+    product = db.get(Product, product_id)
+
+    assert product is not None
+
+    return build_admin_product_detail(product)
+
+
+from app.schemas.admin_product import (
+    AdminProductImageOrderRequest,
+    AdminProductImageUpdateRequest,
+)
+
+
+@router.patch(
+    "/{product_id}/images/{image_id}",
+    response_model=AdminProductImageResponse,
+)
+def update_product_image(
+    product_id: int,
+    image_id: int,
+    payload: AdminProductImageUpdateRequest,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> AdminProductImageResponse:
+    image = db.get(ProductImage, image_id)
+
+    if (
+        image is None
+        or image.product_id != product_id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Image not found.",
+        )
+
+    image.alt_text = (
+        payload.alt_text.strip()
+        if payload.alt_text
+        else None
+    )
+
+    db.commit()
+    db.refresh(image)
+
+    return AdminProductImageResponse(
+        id=image.id,
+        image_url=image.image_url,
+        alt_text=image.alt_text,
+        position=image.position,
+        is_primary=image.is_primary,
+    )
+
+
+@router.put(
+    "/{product_id}/images/order",
+    response_model=list[AdminProductImageResponse],
+)
+def reorder_product_images(
+    product_id: int,
+    payload: AdminProductImageOrderRequest,
+    _: Annotated[
+        AdminUser,
+        Depends(get_current_admin),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> list[AdminProductImageResponse]:
+    product = db.get(Product, product_id)
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found.",
+        )
+
+    current_images = db.scalars(
+        select(ProductImage)
+        .where(
+            ProductImage.product_id
+            == product_id,
+        )
+    ).all()
+
+    images_by_id = {
+        image.id: image
+        for image in current_images
+    }
+
+    submitted_ids = {
+        item.id
+        for item in payload.images
+    }
+
+    if submitted_ids != set(images_by_id):
+        raise HTTPException(
+            status_code=422,
+            detail="Image order does not match product images.",
+        )
+
+    positions = [
+        item.position
+        for item in payload.images
+    ]
+
+    if sorted(positions) != list(
+        range(len(payload.images))
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Image positions must be sequential.",
+        )
+
+    for item in payload.images:
+        images_by_id[item.id].position = (
+            item.position
+        )
+
+    db.commit()
+
+    ordered = db.scalars(
+        select(ProductImage)
+        .where(
+            ProductImage.product_id
+            == product_id,
+        )
+        .order_by(
+            ProductImage.position.asc(),
+        )
+    ).all()
+
+    return [
+        AdminProductImageResponse(
+            id=image.id,
+            image_url=image.image_url,
+            alt_text=image.alt_text,
+            position=image.position,
+            is_primary=image.is_primary,
+        )
+        for image in ordered
+    ]

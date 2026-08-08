@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   ExternalLink,
+  GripVertical,
   ImagePlus,
   LoaderCircle,
   Save,
@@ -24,8 +25,10 @@ import {
   deleteAdminProductImage,
   getAdminProduct,
   getAdminToken,
+  reorderAdminProductImages,
   setAdminProductPrimaryImage,
   updateAdminProduct,
+  updateAdminProductImage,
   uploadAdminProductImages,
   type AdminProductDetail,
   type AdminProductOfferInput,
@@ -56,6 +59,9 @@ export default function AdminProductEditPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] =
     useState(false);
+
+  const [draggedImageId, setDraggedImageId] =
+    useState<number | null>(null);
   const [error, setError] = useState("");
 
   const [name, setName] = useState("");
@@ -287,6 +293,113 @@ export default function AdminProductEditPage() {
     );
 
     await loadProduct();
+  }
+
+  async function moveImage(
+    targetImageId: number,
+  ) {
+    if (
+      draggedImageId === null ||
+      draggedImageId === targetImageId ||
+      !product
+    ) {
+      setDraggedImageId(null);
+      return;
+    }
+
+    const images = [...product.images];
+
+    const sourceIndex = images.findIndex(
+      (image) =>
+        image.id === draggedImageId,
+    );
+
+    const targetIndex = images.findIndex(
+      (image) =>
+        image.id === targetImageId,
+    );
+
+    if (
+      sourceIndex < 0 ||
+      targetIndex < 0
+    ) {
+      setDraggedImageId(null);
+      return;
+    }
+
+    const [movedImage] = images.splice(
+      sourceIndex,
+      1,
+    );
+
+    images.splice(
+      targetIndex,
+      0,
+      movedImage,
+    );
+
+    setProduct({
+      ...product,
+      images,
+    });
+
+    try {
+      const reordered =
+        await reorderAdminProductImages(
+          productId,
+          images,
+        );
+
+      setProduct((current) =>
+        current
+          ? {
+              ...current,
+              images: reordered,
+            }
+          : current,
+      );
+    } catch {
+      setError(
+        "Unable to reorder images.",
+      );
+
+      await loadProduct();
+    } finally {
+      setDraggedImageId(null);
+    }
+  }
+
+  async function saveImageAltText(
+    imageId: number,
+    altText: string,
+  ) {
+    try {
+      const updated =
+        await updateAdminProductImage(
+          productId,
+          imageId,
+          altText,
+        );
+
+      setProduct((current) =>
+        current
+          ? {
+              ...current,
+              images:
+                current.images.map(
+                  (image) =>
+                    image.id === imageId
+                      ? updated
+                      : image,
+                ),
+            }
+          : current,
+      );
+    } catch {
+      setError(
+        "Unable to update image alt text.",
+      );
+    }
   }
 
   if (loading) {
@@ -541,7 +654,20 @@ export default function AdminProductEditPage() {
                     (image) => (
                       <div
                         key={image.id}
-                        className="overflow-hidden rounded-2xl border border-slate-200"
+                        draggable
+                        onDragStart={() =>
+                          setDraggedImageId(image.id)
+                        }
+                        onDragEnd={() =>
+                          setDraggedImageId(null)
+                        }
+                        onDragOver={(event) =>
+                          event.preventDefault()
+                        }
+                        onDrop={() =>
+                          void moveImage(image.id)
+                        }
+                        className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-md"
                       >
                         <img
                           src={image.image_url}
@@ -552,11 +678,40 @@ export default function AdminProductEditPage() {
                         />
 
                         <div className="p-4">
+                          <div className="mb-3 flex items-center justify-between">
+                            <div className="inline-flex cursor-grab items-center gap-2 text-xs font-semibold text-slate-400">
+                              <GripVertical size={15} />
+                              Drag to reorder
+                            </div>
+
+                            <span className="text-xs text-slate-400">
+                              #{image.position + 1}
+                            </span>
+                          </div>
+
                           {image.is_primary && (
                             <p className="mb-3 text-xs font-semibold text-emerald-700">
                               Primary image
                             </p>
                           )}
+
+                          <label className="mb-4 grid gap-2">
+                            <span className="text-xs font-semibold text-slate-500">
+                              SEO alt text
+                            </span>
+
+                            <input
+                              type="text"
+                              defaultValue={image.alt_text ?? ""}
+                              onBlur={(event) =>
+                                void saveImageAltText(
+                                  image.id,
+                                  event.target.value,
+                                )
+                              }
+                              className="min-h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs outline-none focus:border-blue-500 focus:bg-white"
+                            />
+                          </label>
 
                           <div className="flex gap-2">
                             {!image.is_primary && (
