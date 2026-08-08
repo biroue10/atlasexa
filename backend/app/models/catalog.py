@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from app.models.specification import ProductSpecification
 from app.models.score import ProductScore
 from sqlalchemy import (
+    Date,
     DateTime,
     ForeignKey,
     Numeric,
@@ -52,6 +53,21 @@ class Product(Base):
         String(30),
         default="published",
         index=True,
+    )
+
+    gtin: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+    )
+
+    sku: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    mpn: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
     )
 
     model_number: Mapped[str | None] = mapped_column(String(150))
@@ -147,6 +163,21 @@ class ProductPrice(Base):
     market: Mapped[str] = mapped_column(String(10), default="US", index=True)
     country_code: Mapped[str] = mapped_column(String(2), default="US")
     is_affiliate: Mapped[bool] = mapped_column(default=False)
+    availability: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    item_condition: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    price_valid_until: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
     product_url: Mapped[str] = mapped_column(String(1000))
     checked_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

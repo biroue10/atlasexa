@@ -116,6 +116,24 @@ function buildStructuredData(product, canonical) {
       url: offer.product_url,
       price: offer.price,
       priceCurrency: offer.currency,
+      ...(offer.availability
+        ? {
+            availability:
+              offer.availability,
+          }
+        : {}),
+      ...(offer.item_condition
+        ? {
+            itemCondition:
+              offer.item_condition,
+          }
+        : {}),
+      ...(offer.price_valid_until
+        ? {
+            priceValidUntil:
+              offer.price_valid_until,
+          }
+        : {}),
     };
   } else if (
     validOffers.length > 1 &&
@@ -156,7 +174,21 @@ function buildStructuredData(product, canonical) {
     ...(product.model_number
       ? {
           model: product.model_number,
-          mpn: product.model_number,
+        }
+      : {}),
+    ...(product.gtin
+      ? {
+          gtin: product.gtin,
+        }
+      : {}),
+    ...(product.sku
+      ? {
+          sku: product.sku,
+        }
+      : {}),
+    ...(product.mpn
+      ? {
+          mpn: product.mpn,
         }
       : {}),
     ...(offers

@@ -61,6 +61,10 @@ async def compare_products(
             image_url=product.image_url,
             brand=product.brand.name,
             category=product.category.name,
+            model_number=product.model_number,
+            gtin=product.gtin,
+            sku=product.sku,
+            mpn=product.mpn,
             score=product.score.overall_score if product.score else 0,
             score_explanation=(
                 product.score.explanation if product.score else None
@@ -79,6 +83,9 @@ async def compare_products(
                     market=price.market,
                     country_code=price.country_code,
                     is_affiliate=price.is_affiliate,
+                    availability=price.availability,
+                    item_condition=price.item_condition,
+                    price_valid_until=price.price_valid_until,
                     product_url=price.product_url,
                 )
                 for price in product.prices

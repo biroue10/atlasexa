@@ -5,6 +5,9 @@ export interface ProductPrice {
   market: string;
   country_code: string;
   is_affiliate: boolean;
+  availability: string | null;
+  item_condition: string | null;
+  price_valid_until: string | null;
   product_url: string;
 }
 
@@ -29,6 +32,10 @@ export interface ProductDetail {
   image_url: string | null;
   brand: string;
   category: string;
+  model_number: string | null;
+  gtin: string | null;
+  sku: string | null;
+  mpn: string | null;
   score: number;
   score_explanation: string | null;
   seo_title: string | null;

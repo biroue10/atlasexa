@@ -1,4 +1,7 @@
+from datetime import date
+
 from pydantic import BaseModel, ConfigDict
+
 
 class ProductSpecificationResponse(BaseModel):
     name: str
@@ -6,6 +9,7 @@ class ProductSpecificationResponse(BaseModel):
     group: str
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class ProductImageResponse(BaseModel):
     image_url: str
@@ -23,6 +27,9 @@ class ProductPriceResponse(BaseModel):
     market: str
     country_code: str
     is_affiliate: bool
+    availability: str | None
+    item_condition: str | None
+    price_valid_until: date | None
     product_url: str
 
     model_config = ConfigDict(from_attributes=True)
@@ -36,6 +43,10 @@ class ProductDetailResponse(BaseModel):
     image_url: str | None
     brand: str
     category: str
+    model_number: str | None
+    gtin: str | None
+    sku: str | None
+    mpn: str | None
     score: int
     score_explanation: str | None
     seo_title: str | None
