@@ -16,6 +16,11 @@ function escapeHtml(value = "") {
     .replaceAll('"', "&quot;");
 }
 
+function safeJsonLd(value) {
+  return JSON.stringify(value)
+    .replaceAll("<", "\\u003c");
+}
+
 function upsertTag(html, pattern, replacement) {
   if (pattern.test(html)) {
     return html.replace(pattern, replacement);
@@ -73,6 +78,128 @@ async function getProduct(slug) {
   return response.json();
 }
 
+function buildStructuredData(product, canonical) {
+  const images = [
+    ...new Set(
+      [
+        ...(product.images ?? []).map(
+          (image) => image.image_url,
+        ),
+        product.image_url,
+      ].filter(Boolean),
+    ),
+  ];
+
+  const validOffers = (product.prices ?? []).filter(
+    (offer) =>
+      Number.isFinite(offer.price) &&
+      offer.price >= 0 &&
+      offer.currency &&
+      offer.product_url,
+  );
+
+  const currencies = [
+    ...new Set(
+      validOffers.map(
+        (offer) => offer.currency,
+      ),
+    ),
+  ];
+
+  let offers;
+
+  if (validOffers.length === 1) {
+    const offer = validOffers[0];
+
+    offers = {
+      "@type": "Offer",
+      url: offer.product_url,
+      price: offer.price,
+      priceCurrency: offer.currency,
+    };
+  } else if (
+    validOffers.length > 1 &&
+    currencies.length === 1
+  ) {
+    const prices = validOffers.map(
+      (offer) => offer.price,
+    );
+
+    offers = {
+      "@type": "AggregateOffer",
+      lowPrice: Math.min(...prices),
+      highPrice: Math.max(...prices),
+      offerCount: validOffers.length,
+      priceCurrency: currencies[0],
+    };
+  }
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    url: canonical,
+    ...(product.description
+      ? {
+          description: product.description,
+        }
+      : {}),
+    ...(images.length
+      ? {
+          image: images,
+        }
+      : {}),
+    brand: {
+      "@type": "Brand",
+      name: product.brand,
+    },
+    ...(product.model_number
+      ? {
+          model: product.model_number,
+          mpn: product.model_number,
+        }
+      : {}),
+    ...(offers
+      ? {
+          offers,
+        }
+      : {}),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.category,
+        item:
+          `${SITE_URL}/products?category=${encodeURIComponent(
+            product.category,
+          )}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.name,
+        item: canonical,
+      },
+    ],
+  };
+
+  return {
+    productJsonLd,
+    breadcrumbJsonLd,
+  };
+}
+
 function buildSeoHtml(template, product) {
   const title =
     product.seo_title?.trim() ||
@@ -105,6 +232,14 @@ function buildSeoHtml(template, product) {
   const robots = product.is_indexable
     ? "index,follow"
     : "noindex,nofollow";
+
+  const {
+    productJsonLd,
+    breadcrumbJsonLd,
+  } = buildStructuredData(
+    product,
+    canonical,
+  );
 
   let html = template;
 
@@ -164,6 +299,13 @@ function buildSeoHtml(template, product) {
     );
   }
 
+  html = html.replace(
+    "</head>",
+    `  <script type="application/ld+json">${safeJsonLd(productJsonLd)}</script>
+  <script type="application/ld+json">${safeJsonLd(breadcrumbJsonLd)}</script>
+</head>`,
+  );
+
   return html;
 }
 
@@ -186,12 +328,6 @@ async function main() {
     const product = await getProduct(
       item.slug,
     );
-
-    if (product.is_indexable === false) {
-      console.log(
-        `Prerendering noindex product: ${product.slug}`,
-      );
-    }
 
     const html = buildSeoHtml(
       template,
@@ -218,7 +354,7 @@ async function main() {
   }
 
   console.log(
-    `Generated ${generated} product SEO pages.`,
+    `Generated ${generated} product SEO pages with structured data.`,
   );
 }
 
