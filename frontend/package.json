@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/prerender-products.mjs && cp dist/index.html dist/404.html",
+    "build": "tsc -b && vite build && node scripts/prerender-products.mjs && node scripts/generate-sitemap.mjs && cp dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
     "validate:performance": "npm run build && node scripts/validate-performance.mjs",
