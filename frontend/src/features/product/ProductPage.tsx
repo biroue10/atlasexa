@@ -11,6 +11,7 @@ import { Link, useParams } from "react-router-dom";
 
 import ProductImage from "@/components/product/ProductImage";
 import SeoHead from "@/components/seo/SeoHead";
+import ProductStructuredData from "@/components/seo/ProductStructuredData";
 import {
   getProduct,
   type ProductDetail,
@@ -140,14 +141,36 @@ export default function ProductPage() {
     );
   }
 
+  const generatedSeoTitleLong =
+    `${product.name} Review, Specs & Best Price | Atlasexa`;
+
+  const generatedSeoTitleShort =
+    `${product.name} Review & Specs | Atlasexa`;
+
   const seoTitle =
     product.seo_title?.trim() ||
-    `${product.name} Review, Specs & Best Price | Atlasexa`;
+    (
+      generatedSeoTitleLong.length <= 65
+        ? generatedSeoTitleLong
+        : generatedSeoTitleShort.slice(0, 65)
+    );
+
+  const baseSeoDescription =
+    product.description?.trim() || "";
+
+  const generatedSeoDescription =
+    baseSeoDescription.length >= 80
+      ? baseSeoDescription.slice(0, 160)
+      : `${baseSeoDescription}${
+          baseSeoDescription ? " " : ""
+        }Compare ${product.name} specifications, Atlasexa score and current offers before you buy.`.slice(
+          0,
+          160,
+        );
 
   const seoDescription =
     product.meta_description?.trim() ||
-    product.description?.slice(0, 160) ||
-    `Compare ${product.name} specifications, Atlasexa score and current offers.`;
+    generatedSeoDescription;
 
   const canonicalUrl =
     product.canonical_url?.trim() ||
@@ -169,6 +192,10 @@ export default function ProductPage() {
         ogTitle={product.og_title}
         ogDescription={product.og_description}
         indexable={product.is_indexable}
+      />
+
+      <ProductStructuredData
+        product={product}
       />
 
       <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">

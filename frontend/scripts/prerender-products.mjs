@@ -233,14 +233,36 @@ function buildStructuredData(product, canonical) {
 }
 
 function buildSeoHtml(template, product) {
+  const generatedTitleLong =
+    `${product.name} Review, Specs & Best Price | Atlasexa`;
+
+  const generatedTitleShort =
+    `${product.name} Review & Specs | Atlasexa`;
+
   const title =
     product.seo_title?.trim() ||
-    `${product.name} Review, Specs & Best Price | Atlasexa`;
+    (
+      generatedTitleLong.length <= 65
+        ? generatedTitleLong
+        : generatedTitleShort.slice(0, 65)
+    );
+
+  const baseDescription =
+    product.description?.trim() || "";
+
+  const generatedDescription =
+    baseDescription.length >= 80
+      ? baseDescription.slice(0, 160)
+      : `${baseDescription}${
+          baseDescription ? " " : ""
+        }Compare ${product.name} specifications, Atlasexa score and current offers before you buy.`.slice(
+          0,
+          160,
+        );
 
   const description =
     product.meta_description?.trim() ||
-    product.description?.slice(0, 160) ||
-    `Compare ${product.name} specifications, Atlasexa score and current offers.`;
+    generatedDescription;
 
   const canonical =
     product.canonical_url?.trim() ||
