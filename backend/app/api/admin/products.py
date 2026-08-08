@@ -73,7 +73,7 @@ def list_admin_products(
             Product,
             Brand.name.label("brand_name"),
             Category.name.label("category_name"),
-            ProductScore.score.label("product_score"),
+            ProductScore.overall_score.label("product_score"),
             func.coalesce(
                 image_count.c.image_count,
                 0,
